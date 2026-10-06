@@ -34,13 +34,13 @@ class _SpotMapScreenState extends State<SpotMapScreen> {
       });
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Lokasi GPS Terkunci: \${pos.latitude.toStringAsFixed(4)}, \${pos.longitude.toStringAsFixed(4)}')),
+        SnackBar(content: Text('Lokasi GPS Terkunci: ${pos.latitude.toStringAsFixed(4)}, ${pos.longitude.toStringAsFixed(4)}')),
       );
     } catch (e) {
       setState(() => _loadingLocation = false);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('GPS Info: Menggunakan koordinat default DIY (\${e.toString()})')),
+        SnackBar(content: Text('GPS Info: Menggunakan koordinat default DIY (${e.toString()})')),
       );
     }
   }
@@ -61,7 +61,7 @@ class _SpotMapScreenState extends State<SpotMapScreen> {
                 title: const Text('GPS Navigator Angler', style: TextStyle(fontWeight: FontWeight.bold)),
                 subtitle: Text(
                   _currentPosition != null
-                      ? 'Lat: \${_currentPosition!.latitude.toStringAsFixed(4)} | Long: \${_currentPosition!.longitude.toStringAsFixed(4)}'
+                      ? 'Lat: ${_currentPosition!.latitude.toStringAsFixed(4)} | Long: ${_currentPosition!.longitude.toStringAsFixed(4)}'
                       : 'Tekan tombol untuk deteksi koordinat GPS saat ini',
                   style: const TextStyle(fontSize: 12),
                 ),
@@ -90,12 +90,12 @@ class _SpotMapScreenState extends State<SpotMapScreen> {
                         child: Icon(spot.type.contains('Laut') ? Icons.waves : Icons.water, color: Colors.teal),
                       ),
                       title: Text(spot.name, style: const TextStyle(fontWeight: FontWeight.bold)),
-                      subtitle: Text('Tipe: \${spot.type} | Waktu Ideal: \${spot.bestTime}\nKoordinat: \${spot.latitude}, \${spot.longitude}'),
+                      subtitle: Text('Tipe: ${spot.type} | Waktu Ideal: ${spot.bestTime}\nKoordinat: ${spot.latitude}, ${spot.longitude}'),
                       isThreeLine: true,
                       trailing: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(color: Colors.amber.shade100, borderRadius: BorderRadius.circular(8)),
-                        child: Text('★ \${spot.rating}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                        child: Text('★ ${spot.rating}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
                       ),
                     ),
                   );

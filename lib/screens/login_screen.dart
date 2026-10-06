@@ -75,7 +75,7 @@ class _LoginScreenState extends State<LoginScreen> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error Biometrik: \$e')),
+        SnackBar(content: Text('Error Biometrik: $e')),
       );
     }
   }

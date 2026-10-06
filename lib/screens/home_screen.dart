@@ -138,7 +138,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                             decoration: BoxDecoration(color: Colors.amber.shade700, borderRadius: BorderRadius.circular(8)),
                             child: Text(
-                              'Reward: \${Web3SolanaService.tokenRewardBalance.toStringAsFixed(1)} STRIKE',
+                              'Reward: ${Web3SolanaService.tokenRewardBalance.toStringAsFixed(1)} STRIKE',
                               style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
                             ),
                           ),
@@ -201,7 +201,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
-                              'Sensor Kompas (Magnetometer): X:\${_magnetometerX.toStringAsFixed(1)} Y:\${_magnetometerY.toStringAsFixed(1)} Z:\${_magnetometerZ.toStringAsFixed(1)}',
+                              'Sensor Kompas (Magnetometer): X:${_magnetometerX.toStringAsFixed(1)} Y:${_magnetometerY.toStringAsFixed(1)} Z:${_magnetometerZ.toStringAsFixed(1)}',
                               style: const TextStyle(fontSize: 10, color: Colors.black87),
                             ),
                           ),
@@ -247,7 +247,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         child: Icon(Icons.phishing, color: Colors.white),
                       ),
                       title: Text(item.fishSpecies, style: const TextStyle(fontWeight: FontWeight.bold)),
-                      subtitle: Text('\${item.weight} kg | \${item.length} cm | Umpan: \${item.bait}\n\${item.locationName}'),
+                      subtitle: Text('${item.weight} kg | ${item.length} cm | Umpan: ${item.bait}\n${item.locationName}'),
                       isThreeLine: true,
                       trailing: const Icon(Icons.chevron_right),
                     ),

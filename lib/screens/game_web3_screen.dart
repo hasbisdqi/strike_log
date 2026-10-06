@@ -92,7 +92,7 @@ class _GameWeb3ScreenState extends State<GameWeb3Screen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('Saldo Token: \${Web3SolanaService.tokenRewardBalance.toStringAsFixed(1)} STRIKE', style: const TextStyle(fontWeight: FontWeight.bold)),
+                        Text('Saldo Token: ${Web3SolanaService.tokenRewardBalance.toStringAsFixed(1)} STRIKE', style: const TextStyle(fontWeight: FontWeight.bold)),
                         ElevatedButton(
                           onPressed: _mintWeb3Certificate,
                           style: ElevatedButton.styleFrom(backgroundColor: Colors.purple, foregroundColor: Colors.white),
@@ -102,7 +102,7 @@ class _GameWeb3ScreenState extends State<GameWeb3Screen> {
                     ),
                     if (_lastCertificate.isNotEmpty) ...[
                       const SizedBox(height: 8),
-                      Text('Tx Hash: \$_lastCertificate', style: const TextStyle(fontSize: 10, color: Colors.purple)),
+                      Text('Tx Hash: $_lastCertificate', style: const TextStyle(fontSize: 10, color: Colors.purple)),
                     ]
                   ],
                 ),
@@ -121,7 +121,7 @@ class _GameWeb3ScreenState extends State<GameWeb3Screen> {
                     const Text('Strike Reflex Challenge', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.teal)),
                     const Text('Uji kecepatan refleks saat ikan memakan umpan.', style: TextStyle(color: Colors.grey, fontSize: 12)),
                     const SizedBox(height: 16),
-                    Text('Total Skor: \$_score', style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.amber)),
+                    Text('Total Skor: $_score', style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.amber)),
                     const SizedBox(height: 16),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
