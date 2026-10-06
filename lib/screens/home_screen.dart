@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
+import 'dart:math';
 import '../services/database_service.dart';
 import '../services/web3_ai_service.dart';
 import '../models/catch_model.dart';
@@ -20,7 +21,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
-  String _username = 'Angler';
+  String _username = 'Muhammad Hasbi Assidiqi';
   List<CatchLog> _recentCatches = [];
   bool _isLoading = true;
 
@@ -28,6 +29,8 @@ class _HomeScreenState extends State<HomeScreen> {
   double _magnetometerX = 0.0;
   double _magnetometerY = 0.0;
   double _magnetometerZ = 0.0;
+  String _cardinalDirection = 'U (Utara)';
+  double _headingDegrees = 0.0;
   StreamSubscription? _magSub;
 
   @override
@@ -42,10 +45,35 @@ class _HomeScreenState extends State<HomeScreen> {
     try {
       _magSub = magnetometerEvents.listen((MagnetometerEvent event) {
         if (mounted) {
+          // Hitung derajat sudut kompas dari X dan Y
+          double heading = atan2(event.y, event.x) * (180 / pi);
+          if (heading < 0) heading += 360;
+
+          String cardinal = 'U (Utara)';
+          if (heading >= 337.5 || heading < 22.5) {
+            cardinal = 'U (Utara)';
+          } else if (heading >= 22.5 && heading < 67.5) {
+            cardinal = 'TL (Timur Laut)';
+          } else if (heading >= 67.5 && heading < 112.5) {
+            cardinal = 'T (Timur)';
+          } else if (heading >= 112.5 && heading < 157.5) {
+            cardinal = 'TG (Tenggara)';
+          } else if (heading >= 157.5 && heading < 202.5) {
+            cardinal = 'S (Selatan)';
+          } else if (heading >= 202.5 && heading < 247.5) {
+            cardinal = 'BD (Barat Daya)';
+          } else if (heading >= 247.5 && heading < 292.5) {
+            cardinal = 'B (Barat)';
+          } else if (heading >= 292.5 && heading < 337.5) {
+            cardinal = 'BL (Barat Laut)';
+          }
+
           setState(() {
             _magnetometerX = event.x;
             _magnetometerY = event.y;
             _magnetometerZ = event.z;
+            _headingDegrees = heading;
+            _cardinalDirection = cardinal;
           });
         }
       });
@@ -119,24 +147,29 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     const CircleAvatar(
                       radius: 28,
-                      backgroundColor: Colors.white24,
-                      child: Icon(Icons.person, size: 36, color: Colors.white),
+                      backgroundColor: Colors.white,
+                      child: Icon(Icons.person, color: Colors.teal, size: 36),
                     ),
-                    const SizedBox(width: 14),
+                    const SizedBox(width: 16),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('Selamat Memancing,', style: TextStyle(color: Colors.white70, fontSize: 12)),
                           Text(
                             _username,
-                            style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
-                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
                           ),
-                          const SizedBox(height: 4),
+                          const Text(
+                            'Status: Pro Angler (Solana Devnet)',
+                            style: TextStyle(color: Colors.white70, fontSize: 12),
+                          ),
+                          const SizedBox(height: 6),
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                            decoration: BoxDecoration(color: Colors.amber.shade700, borderRadius: BorderRadius.circular(8)),
+                            decoration: BoxDecoration(
+                              color: Colors.amber.shade700,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
                             child: Text(
                               'Reward: ${Web3SolanaService.tokenRewardBalance.toStringAsFixed(1)} STRIKE',
                               style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
@@ -148,35 +181,37 @@ class _HomeScreenState extends State<HomeScreen> {
                     IconButton(
                       icon: const Icon(Icons.logout, color: Colors.white70),
                       onPressed: _showLogoutDialog,
-                    )
+                    ),
                   ],
                 ),
               ),
             ),
             const SizedBox(height: 16),
 
-            // Live Weather & Barometer Widget (Solunar Forecast)
+            // Maritime & Weather Sensor Card
             Card(
-              elevation: 1,
+              elevation: 2,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         const Row(
                           children: [
-                            Icon(Icons.wb_sunny, color: Colors.amber),
+                            Icon(Icons.wb_sunny, color: Colors.orange),
                             SizedBox(width: 8),
-                            Text('Kondisi Spot & Cuaca Maritim', style: TextStyle(fontWeight: FontWeight.bold)),
+                            Text('Cuaca & Kondisi Maritim DIY', style: TextStyle(fontWeight: FontWeight.bold)),
                           ],
                         ),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                          decoration: BoxDecoration(color: Colors.green.shade100, borderRadius: BorderRadius.circular(8)),
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.green.shade50,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
                           child: const Text('Rating: Sangat Baik (4.8/5)', style: TextStyle(color: Colors.green, fontSize: 11, fontWeight: FontWeight.bold)),
                         )
                       ],
@@ -191,19 +226,35 @@ class _HomeScreenState extends State<HomeScreen> {
                       ],
                     ),
                     const SizedBox(height: 12),
-                    // Live Compass Sensor Bar
+                    
+                    // Live Compass Sensor Bar with Heading Direction
                     Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(color: Colors.grey.shade100, borderRadius: BorderRadius.circular(8)),
-                      child: Row(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.teal.shade50,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: Colors.teal.shade200),
+                      ),
+                      child: Column(
                         children: [
-                          const Icon(Icons.explore, color: Colors.teal, size: 20),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              'Sensor Kompas (Magnetometer): X:${_magnetometerX.toStringAsFixed(1)} Y:${_magnetometerY.toStringAsFixed(1)} Z:${_magnetometerZ.toStringAsFixed(1)}',
-                              style: const TextStyle(fontSize: 10, color: Colors.black87),
-                            ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                children: [
+                                  const Icon(Icons.explore, color: Colors.teal, size: 22),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'Arah Kompas: $_cardinalDirection (${_headingDegrees.toStringAsFixed(0)}°)',
+                                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.teal),
+                                  ),
+                                ],
+                              ),
+                              Text(
+                                'X:${_magnetometerX.toStringAsFixed(1)} Y:${_magnetometerY.toStringAsFixed(1)}',
+                                style: TextStyle(fontSize: 10, color: Colors.grey.shade700),
+                              ),
+                            ],
                           ),
                         ],
                       ),
@@ -247,7 +298,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         child: Icon(Icons.phishing, color: Colors.white),
                       ),
                       title: Text(item.fishSpecies, style: const TextStyle(fontWeight: FontWeight.bold)),
-                      subtitle: Text('${item.weight} kg | ${item.length} cm | Umpan: ${item.bait}\n${item.locationName}'),
+                      subtitle: Text(
+                        '${item.weight} kg | ${item.length} cm | Umpan: ${item.bait}\nSpot: ${item.locationName}',
+                      ),
                       isThreeLine: true,
                       trailing: const Icon(Icons.chevron_right),
                     ),
@@ -298,21 +351,35 @@ class _HomeScreenState extends State<HomeScreen> {
               );
             },
           ),
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: () {
+              _loadCatches();
+              setState(() {});
+            },
+          ),
         ],
       ),
       body: pages[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
-        onTap: (idx) => setState(() => _currentIndex = idx),
-        type: BottomNavigationBarType.fixed,
+        onTap: (index) {
+          setState(() {
+            _currentIndex = index;
+          });
+          if (index == 0) {
+            _loadCatches();
+          }
+        },
         selectedItemColor: Colors.teal,
         unselectedItemColor: Colors.grey,
+        type: BottomNavigationBarType.fixed,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.book), label: 'Logbook'),
-          BottomNavigationBarItem(icon: Icon(Icons.camera_alt), label: 'AI Scan'),
+          BottomNavigationBarItem(icon: Icon(Icons.center_focus_strong), label: 'AI Scan'),
           BottomNavigationBarItem(icon: Icon(Icons.map), label: 'Spot Peta'),
-          BottomNavigationBarItem(icon: Icon(Icons.videogame_asset), label: 'Trophy & Web3'),
+          BottomNavigationBarItem(icon: Icon(Icons.sports_esports), label: 'Trophy & Game'),
         ],
       ),
     );
