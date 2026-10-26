@@ -7,6 +7,7 @@ import '../services/weather_api_service.dart';
 import '../services/local_notification_service.dart';
 import '../services/ai_vision_service.dart';
 import '../services/blockchain_proof_service.dart';
+import 'location_picker_screen.dart';
 
 class AddStrikeScreen extends StatefulWidget {
   const AddStrikeScreen({super.key});
@@ -52,6 +53,35 @@ class _AddStrikeScreenState extends State<AddStrikeScreen> {
     _lureController.dispose();
     _notesController.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickLocationFromMap() async {
+    final result = await Navigator.push<LocationPickerResult>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => LocationPickerScreen(
+          initialLat: _latitude ?? -6.2088,
+          initialLng: _longitude ?? 106.8456,
+        ),
+      ),
+    );
+
+    if (result != null && mounted) {
+      setState(() {
+        _latitude = result.latitude;
+        _longitude = result.longitude;
+        _spotNameController.text = result.spotName;
+      });
+
+      // Update weather info for new location
+      final weather = await WeatherApiService.getWeather(
+        latitude: result.latitude,
+        longitude: result.longitude,
+      );
+      if (weather != null && mounted) {
+        setState(() => _weatherInfo = weather);
+      }
+    }
   }
 
   Future<void> _takePhoto() async {
@@ -491,12 +521,21 @@ class _AddStrikeScreenState extends State<AddStrikeScreen> {
                         labelText: 'Nama Spot Mancing *',
                         hintText: 'Misal: Waduk Jatiluhur, Muara Angke',
                         prefixIcon: const Icon(Icons.place_outlined),
-                        suffixIcon: _latitude != null
-                            ? const Tooltip(
+                        suffixIcon: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (_latitude != null)
+                              const Tooltip(
                                 message: 'GPS Terdeteksi',
                                 child: Icon(Icons.my_location, color: Colors.teal, size: 20),
-                              )
-                            : null,
+                              ),
+                            IconButton(
+                              tooltip: 'Pilih Titik di Peta',
+                              icon: const Icon(Icons.map, color: primaryColor),
+                              onPressed: _pickLocationFromMap,
+                            ),
+                          ],
+                        ),
                       ),
                       validator: (val) =>
                           val == null || val.trim().isEmpty ? 'Spot wajib diisi' : null,
