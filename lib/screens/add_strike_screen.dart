@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../services/strike_service.dart';
 import '../services/location_service.dart';
 import '../services/weather_api_service.dart';
@@ -35,7 +36,7 @@ class _AddStrikeScreenState extends State<AddStrikeScreen> {
   double? _latitude;
   double? _longitude;
   WeatherResult? _weatherInfo;
-  Map<String, dynamic>? _blockchainProof;
+  BlockchainProofResult? _blockchainProof;
 
   @override
   void initState() {
@@ -226,8 +227,8 @@ class _AddStrikeScreenState extends State<AddStrikeScreen> {
         photoUrl: uploadedPhotoUrl,
         latitude: _latitude,
         longitude: _longitude,
-        blockchainHash: _blockchainProof?['block_hash'] as String?,
-        blockNumber: _blockchainProof?['block_number'] as int?,
+        blockchainHash: _blockchainProof?.txHash,
+        blockNumber: _blockchainProof?.blockNumber,
       );
 
       // Trigger local mobile notification
@@ -325,44 +326,53 @@ class _AddStrikeScreenState extends State<AddStrikeScreen> {
                                 ),
                               ),
 
-                            // Blockchain Proof Stamp Overlay
+                            // Blockchain Proof Stamp Overlay (Polygon Amoy Network)
                             if (_blockchainProof != null)
                               Positioned(
                                 top: 12,
                                 left: 12,
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                                  decoration: BoxDecoration(
-                                    color: Colors.black.withValues(alpha: 0.65),
-                                    borderRadius: BorderRadius.circular(10),
-                                    border: Border.all(color: Colors.tealAccent.withValues(alpha: 0.8)),
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      const Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Icon(Icons.verified, color: Colors.tealAccent, size: 14),
-                                          SizedBox(width: 4),
-                                          Text(
-                                            'PROOF-OF-CATCH BLOCKCHAIN',
-                                            style: TextStyle(
-                                              color: Colors.tealAccent,
-                                              fontSize: 9,
-                                              fontWeight: FontWeight.bold,
-                                              letterSpacing: 0.5,
+                                child: InkWell(
+                                  onTap: () async {
+                                    final uri = Uri.parse(_blockchainProof!.explorerUrl);
+                                    if (await canLaunchUrl(uri)) {
+                                      await launchUrl(uri, mode: LaunchMode.externalApplication);
+                                    }
+                                  },
+                                  borderRadius: BorderRadius.circular(10),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                    decoration: BoxDecoration(
+                                      color: Colors.black.withValues(alpha: 0.75),
+                                      borderRadius: BorderRadius.circular(10),
+                                      border: Border.all(color: Colors.purpleAccent.withValues(alpha: 0.9)),
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            const Icon(Icons.link, color: Colors.purpleAccent, size: 13),
+                                            const SizedBox(width: 4),
+                                            Text(
+                                              'POLYGON AMOY (#${_blockchainProof!.blockNumber})',
+                                              style: const TextStyle(
+                                                color: Colors.purpleAccent,
+                                                fontSize: 9,
+                                                fontWeight: FontWeight.bold,
+                                                letterSpacing: 0.5,
+                                              ),
                                             ),
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 2),
-                                      Text(
-                                        'Block #${_blockchainProof!['block_number']} • ${_blockchainProof!['short_hash']}',
-                                        style: const TextStyle(color: Colors.white, fontSize: 8),
-                                      ),
-                                    ],
+                                          ],
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          'Tx: ${_blockchainProof!.shortHash} ↗',
+                                          style: const TextStyle(color: Colors.white, fontSize: 8),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
                               ),

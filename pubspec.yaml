@@ -53,6 +53,8 @@ dependencies:
   flutter_map: ^8.3.2
   latlong2: ^0.10.1
   google_maps_flutter: ^2.18.1
+  web3dart: ^3.0.3
+  url_launcher: ^6.3.3
 
 dev_dependencies:
   flutter_test:

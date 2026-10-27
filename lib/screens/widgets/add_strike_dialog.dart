@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../models/strike_model.dart';
+
 import '../../services/strike_service.dart';
 
 class AddStrikeDialog extends StatefulWidget {

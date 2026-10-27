@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../core/theme/app_tokens.dart';
 import '../../core/theme/glass_card.dart';
 import '../../models/strike_model.dart';
@@ -83,22 +84,44 @@ class StrikeCardTile extends StatelessWidget {
                   style: const TextStyle(color: AppColors.textMuted, fontSize: 11),
                 ),
                 if (item.blockchainHash != null) ...[
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      const Icon(Icons.verified, size: 12, color: AppColors.tealAccent),
-                      const SizedBox(width: 4),
-                      Text(
-                        item.blockNumber != null
-                            ? 'Block #${item.blockNumber}'
-                            : 'Proof-of-Catch Verified',
-                        style: const TextStyle(
-                          color: AppColors.tealAccent,
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                        ),
+                  const SizedBox(height: 6),
+                  InkWell(
+                    onTap: () async {
+                      final hash = item.blockchainHash!;
+                      final url = 'https://amoy.polygonscan.com/tx/$hash';
+                      final uri = Uri.parse(url);
+                      if (await canLaunchUrl(uri)) {
+                        await launchUrl(uri, mode: LaunchMode.externalApplication);
+                      }
+                    },
+                    borderRadius: BorderRadius.circular(AppRadius.sm),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Colors.purple.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(AppRadius.sm),
+                        border: Border.all(color: Colors.purple.withValues(alpha: 0.3)),
                       ),
-                    ],
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.link, size: 11, color: Colors.purple),
+                          const SizedBox(width: 4),
+                          Text(
+                            item.blockNumber != null
+                                ? 'Polygon Amoy #${item.blockNumber}'
+                                : 'Polygon Verified',
+                            style: const TextStyle(
+                              color: Colors.purple,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(width: 2),
+                          const Icon(Icons.open_in_new, size: 9, color: Colors.purple),
+                        ],
+                      ),
+                    ),
                   ),
                 ],
               ],

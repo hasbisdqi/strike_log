@@ -2,8 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../core/supabase_config.dart';
-import '../core/theme/app_tokens.dart';
-import '../core/theme/glass_card.dart';
+
 import '../models/strike_model.dart';
 import '../services/strike_service.dart';
 import 'login_screen.dart';
