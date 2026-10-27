@@ -3,6 +3,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../core/theme/app_tokens.dart';
 import '../../core/theme/glass_card.dart';
 import '../../models/strike_model.dart';
+import '../strike_detail_screen.dart';
 
 class StrikeCardTile extends StatelessWidget {
   final StrikeModel item;
@@ -31,11 +32,24 @@ class StrikeCardTile extends StatelessWidget {
     final dateStr =
         '${item.caughtAt.day}/${item.caughtAt.month}/${item.caughtAt.year} ${item.caughtAt.hour.toString().padLeft(2, '0')}:${item.caughtAt.minute.toString().padLeft(2, '0')}';
 
-    return GlassCard(
-      padding: const EdgeInsets.all(AppSpacing.md),
-      borderRadius: AppRadius.lg,
-      child: Row(
-        children: [
+    return InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => StrikeDetailScreen(
+              item: item,
+              onDelete: onDelete,
+            ),
+          ),
+        );
+      },
+      borderRadius: BorderRadius.circular(AppRadius.lg),
+      child: GlassCard(
+        padding: const EdgeInsets.all(AppSpacing.md),
+        borderRadius: AppRadius.lg,
+        child: Row(
+          children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(AppRadius.md),
             child: item.photoUrl != null && item.photoUrl!.isNotEmpty
@@ -156,6 +170,7 @@ class StrikeCardTile extends StatelessWidget {
           ),
         ],
       ),
-    );
+    ),
+  );
   }
 }
