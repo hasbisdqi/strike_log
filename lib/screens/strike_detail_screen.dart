@@ -15,8 +15,12 @@ class StrikeDetailScreen extends StatelessWidget {
     this.onDelete,
   });
 
-  Future<void> _openPolygonscan(BuildContext context, String hash) async {
-    final url = 'https://amoy.polygonscan.com/tx/$hash';
+  Future<void> _openPolygonscan(BuildContext context, String hash, int? blockNumber) async {
+    final url = hash.startsWith('0x') && hash.length == 66
+        ? 'https://amoy.polygonscan.com/tx/$hash'
+        : (blockNumber != null
+            ? 'https://amoy.polygonscan.com/block/$blockNumber'
+            : 'https://amoy.polygonscan.com');
     final uri = Uri.parse(url);
     try {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
@@ -359,7 +363,7 @@ class StrikeDetailScreen extends StatelessWidget {
                         ),
                         padding: const EdgeInsets.symmetric(vertical: 12),
                       ),
-                      onPressed: () => _openPolygonscan(context, item.blockchainHash!),
+                      onPressed: () => _openPolygonscan(context, item.blockchainHash!, item.blockNumber),
                       icon: const Icon(Icons.open_in_new, size: 16),
                       label: const Text(
                         'Buka di Polygonscan Explorer',
