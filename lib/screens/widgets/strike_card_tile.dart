@@ -90,8 +90,10 @@ class StrikeCardTile extends StatelessWidget {
                       final hash = item.blockchainHash!;
                       final url = 'https://amoy.polygonscan.com/tx/$hash';
                       final uri = Uri.parse(url);
-                      if (await canLaunchUrl(uri)) {
+                      try {
                         await launchUrl(uri, mode: LaunchMode.externalApplication);
+                      } catch (_) {
+                        await launchUrl(uri, mode: LaunchMode.platformDefault);
                       }
                     },
                     borderRadius: BorderRadius.circular(AppRadius.sm),

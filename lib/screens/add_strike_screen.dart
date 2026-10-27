@@ -334,8 +334,10 @@ class _AddStrikeScreenState extends State<AddStrikeScreen> {
                                 child: InkWell(
                                   onTap: () async {
                                     final uri = Uri.parse(_blockchainProof!.explorerUrl);
-                                    if (await canLaunchUrl(uri)) {
+                                    try {
                                       await launchUrl(uri, mode: LaunchMode.externalApplication);
+                                    } catch (_) {
+                                      await launchUrl(uri, mode: LaunchMode.platformDefault);
                                     }
                                   },
                                   borderRadius: BorderRadius.circular(10),
