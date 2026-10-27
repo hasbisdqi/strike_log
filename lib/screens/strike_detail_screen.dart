@@ -86,8 +86,13 @@ class StrikeDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dateFormat = DateFormat('EEEE, dd MMMM yyyy • HH:mm', 'id_ID');
-    final formattedDate = dateFormat.format(item.caughtAt);
+    String formattedDate;
+    try {
+      final dateFormat = DateFormat('EEEE, dd MMMM yyyy • HH:mm');
+      formattedDate = dateFormat.format(item.caughtAt);
+    } catch (_) {
+      formattedDate = '${item.caughtAt.day}/${item.caughtAt.month}/${item.caughtAt.year} ${item.caughtAt.hour.toString().padLeft(2, '0')}:${item.caughtAt.minute.toString().padLeft(2, '0')}';
+    }
 
     return Scaffold(
       backgroundColor: AppColors.background,
