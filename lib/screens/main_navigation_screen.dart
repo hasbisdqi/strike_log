@@ -17,6 +17,7 @@ import 'favorite_spots_screen.dart';
 import 'privacy_security_screen.dart';
 import 'about_app_screen.dart';
 import 'strike_map_screen.dart';
+import 'tackle_box_screen.dart';
 import 'widgets/strike_card_tile.dart';
 
 class MainNavigationScreen extends StatefulWidget {
@@ -527,12 +528,13 @@ class _HomeScreen extends StatelessWidget {
                         },
                       ),
                       _QuickActionTile(
-                        icon: Icons.military_tech_outlined,
-                        label: 'Rank Angler',
-                        gradientColors: const [Color(0xFFF87171), Color(0xFFDC2626)],
+                        icon: Icons.inventory_2_outlined,
+                        label: 'Kotak Alat',
+                        gradientColors: const [Color(0xFFF97316), Color(0xFFC2410C)],
                         onTap: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Status: ${strikes.length >= 10 ? 'Senior Angler 🎣' : 'Angler Pemula 🎣'} (${strikes.length} Strike)')),
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const TackleBoxScreen()),
                           );
                         },
                       ),

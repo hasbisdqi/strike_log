@@ -8,7 +8,9 @@ import '../services/weather_api_service.dart';
 import '../services/local_notification_service.dart';
 import '../services/ai_vision_service.dart';
 import '../services/blockchain_proof_service.dart';
+import '../models/gear_item.dart';
 import 'location_picker_screen.dart';
+import 'tackle_box_screen.dart';
 
 class AddStrikeScreen extends StatefulWidget {
   const AddStrikeScreen({super.key});
@@ -54,6 +56,24 @@ class _AddStrikeScreenState extends State<AddStrikeScreen> {
     _lureController.dispose();
     _notesController.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickGearFromTackleBox() async {
+    final selected = await Navigator.push<GearItem>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const TackleBoxScreen(selectMode: true),
+      ),
+    );
+
+    if (selected != null && mounted) {
+      setState(() {
+        _lureController.text = selected.name;
+        if (_notesController.text.isEmpty && selected.spec.isNotEmpty) {
+          _notesController.text = 'Gear: ${selected.brand} (${selected.spec})';
+        }
+      });
+    }
   }
 
   Future<void> _pickLocationFromMap() async {
@@ -555,10 +575,15 @@ class _AddStrikeScreenState extends State<AddStrikeScreen> {
                     const SizedBox(height: 16),
                     TextFormField(
                       controller: _lureController,
-                      decoration: const InputDecoration(
-                        labelText: 'Umpan / Lure (Opsional)',
-                        hintText: 'Misal: Soft Frog, Lumut, Udang Hidup',
-                        prefixIcon: Icon(Icons.phishing_outlined),
+                      decoration: InputDecoration(
+                        labelText: 'Umpan / Lure / Gear (Opsional)',
+                        hintText: 'Misal: Rapala X-Rap, Soft Frog',
+                        prefixIcon: const Icon(Icons.phishing_outlined),
+                        suffixIcon: IconButton(
+                          tooltip: 'Pilih dari Kotak Alat',
+                          icon: const Icon(Icons.inventory_2_outlined, color: primaryColor),
+                          onPressed: _pickGearFromTackleBox,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 16),
