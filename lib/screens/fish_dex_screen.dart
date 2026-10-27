@@ -3,6 +3,7 @@ import '../core/theme/app_tokens.dart';
 import '../core/theme/glass_card.dart';
 import '../models/strike_model.dart';
 import '../services/strike_service.dart';
+import '../services/fishial_api_service.dart';
 
 class FishDexScreen extends StatefulWidget {
   final List<StrikeModel> strikes;
@@ -16,84 +17,81 @@ class FishDexScreen extends StatefulWidget {
 class _FishDexScreenState extends State<FishDexScreen> {
   late List<StrikeModel> _currentStrikes;
   final StrikeService _strikeService = StrikeService();
+  List<FishialSpecies> _speciesList = FishialApiService.defaultFishialSpecies;
   bool _isLoading = false;
-
-  // Master Pokedex spesies ikan target pancing di Indonesia
-  final List<Map<String, dynamic>> _masterEncyclopedia = [
-    {
-      'name': 'Ikan Kakap Merah (Red Snapper)',
-      'alias': 'Lutjanus campechanus',
-      'habitat': 'Karang Laut Dalam & Muara',
-      'icon': Icons.set_meal,
-    },
-    {
-      'name': 'Ikan Gabus / Channa Striata',
-      'alias': 'Snakehead Hunter',
-      'habitat': 'Rawa, Danau & Sungai Berlumut',
-      'icon': Icons.water,
-    },
-    {
-      'name': 'Ikan Nila Badot (Nile Tilapia)',
-      'alias': 'Oreochromis niloticus',
-      'habitat': 'Waduk, Kolam & Danau Air Tawar',
-      'icon': Icons.set_meal_outlined,
-    },
-    {
-      'name': 'Ikan Kerapu Cantang (Grouper)',
-      'alias': 'Epinephelus fuscoguttatus',
-      'habitat': 'Batu Karang & Dermaga Laut',
-      'icon': Icons.waves,
-    },
-    {
-      'name': 'Ikan Barramundi (Kakap Putih)',
-      'alias': 'Lates calcarifer',
-      'habitat': 'Muara Payau & Mangrove',
-      'icon': Icons.phishing,
-    },
-  ];
+  String _searchQuery = '';
 
   @override
   void initState() {
     super.initState();
     _currentStrikes = widget.strikes;
-    _refreshFromDatabase();
+    _loadFishialSpecies();
   }
 
-  Future<void> _refreshFromDatabase() async {
+  Future<void> _loadFishialSpecies() async {
     setState(() => _isLoading = true);
-    final data = await _strikeService.getStrikes();
+    final results = await Future.wait([
+      _strikeService.getStrikes(),
+      FishialApiService.fetchFishialSpeciesList(),
+    ]);
+
     if (mounted) {
       setState(() {
-        _currentStrikes = data;
+        _currentStrikes = results[0] as List<StrikeModel>;
+        _speciesList = results[1] as List<FishialSpecies>;
         _isLoading = false;
       });
     }
   }
 
+  bool _isFishMatch(String speciesName, String sciName, Set<String> userCaughtNames) {
+    final spec = speciesName.toLowerCase();
+    final sci = sciName.toLowerCase();
+
+    for (final caught in userCaughtNames) {
+      if (caught.isEmpty) continue;
+      if (spec.contains(caught) || caught.contains(spec)) return true;
+      if (sci.isNotEmpty && (sci.contains(caught) || caught.contains(sci))) return true;
+
+      // Token check (e.g. "kakap", "snapper", "gabus", "nila")
+      final tokens = spec.replaceAll(RegExp(r'[^a-zA-Z0-9 ]'), '').split(' ');
+      for (final t in tokens) {
+        if (t.length >= 4 && caught.contains(t)) return true;
+      }
+    }
+    return false;
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Grouping caught fish by normalized lowercase name
-    final Map<String, List<StrikeModel>> caughtGroups = {};
-    for (final s in _currentStrikes) {
-      final name = s.fishName.trim().toLowerCase();
-      caughtGroups.putIfAbsent(name, () => []).add(s);
-    }
+    // Collect all unique caught fish names from user logs
+    final userCaughtNames = _currentStrikes
+        .map((s) => s.fishName.trim().toLowerCase())
+        .where((name) => name.isNotEmpty)
+        .toSet();
 
-    final totalUnlocked = _masterEncyclopedia.where((e) {
-      final target = (e['name'] as String).toLowerCase();
-      return caughtGroups.keys.any((k) => k.contains(target) || target.contains(k));
+    final filteredSpecies = _speciesList.where((item) {
+      if (_searchQuery.isEmpty) return true;
+      final q = _searchQuery.toLowerCase();
+      return item.commonName.toLowerCase().contains(q) ||
+          item.scientificName.toLowerCase().contains(q) ||
+          item.habitat.toLowerCase().contains(q);
+    }).toList();
+
+    final totalUnlocked = _speciesList.where((item) {
+      return _isFishMatch(item.commonName, item.scientificName, userCaughtNames);
     }).length;
 
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Koleksi Ikan (FishDex)', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text('FishDex (Fishial.AI)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
       ),
       body: RefreshIndicator(
-        onRefresh: _refreshFromDatabase,
+        onRefresh: _loadFishialSpecies,
         child: ListView(
           padding: const EdgeInsets.all(AppSpacing.lg),
           children: [
@@ -119,19 +117,24 @@ class _FishDexScreenState extends State<FishDexScreen> {
                       color: Colors.white.withValues(alpha: 0.2),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.collections_bookmark, color: Colors.white, size: 28),
+                    child: const Icon(Icons.verified, color: Colors.white, size: 28),
                   ),
                   const SizedBox(width: AppSpacing.md),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'Ensiklopedia Angler',
-                          style: TextStyle(color: Colors.white70, fontSize: 12),
+                        const Row(
+                          children: [
+                            Text(
+                              'Powered by Fishial.AI Species',
+                              style: TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.w600),
+                            ),
+                          ],
                         ),
+                        const SizedBox(height: 2),
                         Text(
-                          '$totalUnlocked dari ${_masterEncyclopedia.length} Spesies Terkoleksi',
+                          '$totalUnlocked dari ${_speciesList.length} Spesies Terbuka',
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 16,
@@ -148,7 +151,7 @@ class _FishDexScreenState extends State<FishDexScreen> {
                       borderRadius: BorderRadius.circular(AppRadius.pill),
                     ),
                     child: Text(
-                      '${((totalUnlocked / _masterEncyclopedia.length) * 100).toInt()}%',
+                      '${_speciesList.isEmpty ? 0 : ((totalUnlocked / _speciesList.length) * 100).toInt()}%',
                       style: const TextStyle(
                         color: AppColors.primary,
                         fontWeight: FontWeight.bold,
@@ -159,7 +162,24 @@ class _FishDexScreenState extends State<FishDexScreen> {
                 ],
               ),
             ),
-            const SizedBox(height: AppSpacing.lg),
+            const SizedBox(height: AppSpacing.md),
+
+            // Search Bar
+            TextField(
+              decoration: InputDecoration(
+                hintText: 'Cari taksonomi (misal: Snapper, Grouper, Nila)...',
+                prefixIcon: const Icon(Icons.search, size: 20),
+                contentPadding: const EdgeInsets.symmetric(vertical: 0),
+                filled: true,
+                fillColor: Colors.white,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(AppRadius.lg),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+              onChanged: (val) => setState(() => _searchQuery = val.trim()),
+            ),
+            const SizedBox(height: AppSpacing.md),
 
             if (_isLoading)
               const Center(
@@ -169,28 +189,27 @@ class _FishDexScreenState extends State<FishDexScreen> {
                 ),
               ),
 
-            // Master Encyclopedia Cards
-            ..._masterEncyclopedia.map((master) {
-              final masterName = master['name'] as String;
-              final targetLower = masterName.toLowerCase();
-
-              // Check if user has caught this fish
-              final matchKey = caughtGroups.keys.firstWhere(
-                (k) => k.contains(targetLower) || targetLower.contains(k),
-                orElse: () => '',
+            // Fishial Species Cards
+            ...filteredSpecies.map((species) {
+              final isUnlocked = _isFishMatch(
+                species.commonName,
+                species.scientificName,
+                userCaughtNames,
               );
 
-              final isUnlocked = matchKey.isNotEmpty;
-              final caughtList = isUnlocked ? caughtGroups[matchKey]! : <StrikeModel>[];
-              final maxWeight = isUnlocked
-                  ? caughtList.map((e) => e.weightKg).reduce((a, b) => a > b ? a : b)
-                  : 0.0;
-              final samplePhoto = isUnlocked
-                  ? caughtList.firstWhere(
-                      (e) => e.photoUrl != null && e.photoUrl!.isNotEmpty,
-                      orElse: () => caughtList.first,
-                    ).photoUrl
-                  : null;
+              // Find user's best catch for this species if unlocked
+              StrikeModel? matchedStrike;
+              if (isUnlocked) {
+                final specLower = species.commonName.toLowerCase();
+                try {
+                  matchedStrike = _currentStrikes.firstWhere((s) {
+                    final name = s.fishName.toLowerCase();
+                    return specLower.contains(name) || name.contains(specLower);
+                  });
+                } catch (_) {
+                  matchedStrike = _currentStrikes.isNotEmpty ? _currentStrikes.first : null;
+                }
+              }
 
               return Padding(
                 padding: const EdgeInsets.only(bottom: AppSpacing.md),
@@ -198,69 +217,89 @@ class _FishDexScreenState extends State<FishDexScreen> {
                   padding: const EdgeInsets.all(AppSpacing.md),
                   borderRadius: AppRadius.lg,
                   backgroundColor: isUnlocked
-                      ? Colors.white.withValues(alpha: 0.9)
-                      : Colors.grey.shade100.withValues(alpha: 0.8),
+                      ? Colors.white.withValues(alpha: 0.95)
+                      : Colors.grey.shade100.withValues(alpha: 0.85),
                   child: Row(
                     children: [
                       ClipRRect(
                         borderRadius: BorderRadius.circular(AppRadius.md),
-                        child: isUnlocked && samplePhoto != null && samplePhoto.isNotEmpty
+                        child: isUnlocked && matchedStrike?.photoUrl != null && matchedStrike!.photoUrl!.isNotEmpty
                             ? Image.network(
-                                samplePhoto,
+                                matchedStrike.photoUrl!,
                                 width: 56,
                                 height: 56,
                                 fit: BoxFit.cover,
-                                errorBuilder: (_, _, _) => _defaultFishIcon(isUnlocked),
+                                errorBuilder: (_, _, _) => _buildFishAvatar(isUnlocked),
                               )
-                            : _defaultFishIcon(isUnlocked),
+                            : _buildFishAvatar(isUnlocked),
                       ),
                       const SizedBox(width: AppSpacing.md),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    species.commonName,
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14,
+                                      color: isUnlocked ? AppColors.textPrimary : AppColors.textMuted,
+                                    ),
+                                  ),
+                                ),
+                                if (isUnlocked)
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.success.withValues(alpha: 0.12),
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: const Text(
+                                      'TERCATAT',
+                                      style: TextStyle(
+                                        color: AppColors.success,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 9,
+                                      ),
+                                    ),
+                                  )
+                                else
+                                  const Icon(Icons.lock_outline, size: 16, color: Colors.grey),
+                              ],
+                            ),
+                            const SizedBox(height: 2),
                             Text(
-                              isUnlocked ? masterName : '??? (Belum Ditemukan)',
+                              species.scientificName,
                               style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
-                                color: isUnlocked ? AppColors.textPrimary : AppColors.textMuted,
+                                color: isUnlocked ? AppColors.primary : Colors.grey.shade500,
+                                fontSize: 11,
+                                fontStyle: FontStyle.italic,
+                                fontWeight: isUnlocked ? FontWeight.w600 : FontWeight.normal,
                               ),
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              master['alias'] as String,
-                              style: const TextStyle(fontSize: 11, fontStyle: FontStyle.italic, color: AppColors.textMuted),
-                            ),
-                            const SizedBox(height: 3),
-                            Text(
-                              isUnlocked
-                                  ? 'Tertangkap: ${caughtList.length}x • Rekor: $maxWeight kg'
-                                  : 'Habitat: ${master['habitat']}',
+                              species.habitat,
                               style: TextStyle(
-                                fontSize: 11,
-                                color: isUnlocked ? AppColors.tealAccent : AppColors.textSecondary,
-                                fontWeight: isUnlocked ? FontWeight.w600 : FontWeight.normal,
+                                color: isUnlocked ? AppColors.textSecondary : Colors.grey.shade400,
+                                fontSize: 10,
                               ),
                             ),
+                            if (isUnlocked && matchedStrike != null) ...[
+                              const SizedBox(height: 4),
+                              Text(
+                                'Rekor Pribadi: ${matchedStrike.weightKg} kg • ${matchedStrike.spotName}',
+                                style: const TextStyle(
+                                  color: AppColors.tealAccent,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
                           ],
-                        ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: isUnlocked
-                              ? AppColors.primaryContainer
-                              : Colors.grey.shade200,
-                          borderRadius: BorderRadius.circular(AppRadius.pill),
-                        ),
-                        child: Text(
-                          isUnlocked ? 'Unlocked 🎣' : 'Locked 🔒',
-                          style: TextStyle(
-                            color: isUnlocked ? AppColors.primaryDark : AppColors.textMuted,
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                          ),
                         ),
                       ),
                     ],
@@ -268,74 +307,25 @@ class _FishDexScreenState extends State<FishDexScreen> {
                 ),
               );
             }),
-
-            // Additional custom catches not in master template
-            ...caughtGroups.entries.where((entry) {
-              final k = entry.key;
-              return !_masterEncyclopedia.any((m) {
-                final target = (m['name'] as String).toLowerCase();
-                return k.contains(target) || target.contains(k);
-              });
-            }).map((entry) {
-              final fishName = entry.value.first.fishName;
-              final maxWeight = entry.value.map((e) => e.weightKg).reduce((a, b) => a > b ? a : b);
-              return Padding(
-                padding: const EdgeInsets.only(bottom: AppSpacing.md),
-                child: GlassCard(
-                  padding: const EdgeInsets.all(AppSpacing.md),
-                  borderRadius: AppRadius.lg,
-                  child: Row(
-                    children: [
-                      _defaultFishIcon(true),
-                      const SizedBox(width: AppSpacing.md),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              fishName,
-                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppColors.textPrimary),
-                            ),
-                            const SizedBox(height: 3),
-                            Text(
-                              'Spesies Unik • Tertangkap: ${entry.value.length}x • Rekor: $maxWeight kg',
-                              style: const TextStyle(fontSize: 11, color: AppColors.tealAccent, fontWeight: FontWeight.w600),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: AppColors.amberAccent.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(AppRadius.pill),
-                        ),
-                        child: const Text('Spesial ⭐', style: TextStyle(color: Colors.amber, fontSize: 10, fontWeight: FontWeight.bold)),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            }),
-            const SizedBox(height: AppSpacing.bottomNavPadding),
           ],
         ),
       ),
     );
   }
 
-  Widget _defaultFishIcon(bool isUnlocked) {
+  Widget _buildFishAvatar(bool isUnlocked) {
     return Container(
       width: 56,
       height: 56,
       decoration: BoxDecoration(
-        color: isUnlocked ? null : Colors.grey.shade300,
-        gradient: isUnlocked ? AppColors.primaryGradient : null,
+        color: isUnlocked
+            ? AppColors.primary.withValues(alpha: 0.12)
+            : Colors.grey.shade300,
         borderRadius: BorderRadius.circular(AppRadius.md),
       ),
       child: Icon(
-        isUnlocked ? Icons.set_meal : Icons.lock_outline,
-        color: isUnlocked ? Colors.white : Colors.grey.shade500,
+        isUnlocked ? Icons.set_meal : Icons.lock,
+        color: isUnlocked ? AppColors.primary : Colors.grey.shade600,
         size: 26,
       ),
     );
