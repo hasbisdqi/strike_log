@@ -427,7 +427,120 @@ class _HomeScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 22),
+
+              // Angler Tool Hub (Fitur Utama Cepat)
+              Text(
+                'Fitur & Alat Mancing',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: const Color(0xFF0F172A),
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  return GridView.count(
+                    crossAxisCount: 4,
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    mainAxisSpacing: 12,
+                    crossAxisSpacing: 8,
+                    childAspectRatio: 0.82,
+                    children: [
+                      _QuickActionTile(
+                        icon: Icons.vibration,
+                        label: 'Sensor Strike',
+                        gradientColors: const [Color(0xFF38BDF8), Color(0xFF0284C7)],
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const StrikeDetectorScreen()),
+                          );
+                        },
+                      ),
+                      _QuickActionTile(
+                        icon: Icons.map_outlined,
+                        label: 'Peta Spot',
+                        gradientColors: const [Color(0xFF2DD4BF), Color(0xFF0D9488)],
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => StrikeMapScreen(strikes: strikes)),
+                          );
+                        },
+                      ),
+                      _QuickActionTile(
+                        icon: Icons.smart_toy_outlined,
+                        label: 'StrikeBot AI',
+                        gradientColors: const [Color(0xFFA78BFA), Color(0xFF7C3AED)],
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const StrikeBotScreen()),
+                          );
+                        },
+                      ),
+                      _QuickActionTile(
+                        icon: Icons.sports_esports_outlined,
+                        label: 'Mini Game',
+                        gradientColors: const [Color(0xFFF472B6), Color(0xFFDB2777)],
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const ReelTheFishGameScreen()),
+                          );
+                        },
+                      ),
+                      _QuickActionTile(
+                        icon: Icons.menu_book_outlined,
+                        label: 'FishDex',
+                        gradientColors: const [Color(0xFFFBBF24), Color(0xFFD97706)],
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => FishDexScreen(strikes: strikes)),
+                          );
+                        },
+                      ),
+                      _QuickActionTile(
+                        icon: Icons.place_outlined,
+                        label: 'Spot Favorit',
+                        gradientColors: const [Color(0xFF34D399), Color(0xFF059669)],
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => FavoriteSpotsScreen(strikes: strikes)),
+                          );
+                        },
+                      ),
+                      _QuickActionTile(
+                        icon: Icons.currency_exchange,
+                        label: 'Kurs & Jam',
+                        gradientColors: const [Color(0xFF60A5FA), Color(0xFF2563EB)],
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const CurrencyTimeConverterScreen()),
+                          );
+                        },
+                      ),
+                      _QuickActionTile(
+                        icon: Icons.military_tech_outlined,
+                        label: 'Rank Angler',
+                        gradientColors: const [Color(0xFFF87171), Color(0xFFDC2626)],
+                        onTap: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Status: ${strikes.length >= 10 ? 'Senior Angler 🎣' : 'Angler Pemula 🎣'} (${strikes.length} Strike)')),
+                          );
+                        },
+                      ),
+                    ],
+                  );
+                },
+              ),
+              const SizedBox(height: 20),
 
               Text(
                 'Strike Terbaru',
@@ -495,6 +608,66 @@ class _HomeScreen extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _QuickActionTile extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final List<Color> gradientColors;
+  final VoidCallback onTap;
+
+  const _QuickActionTile({
+    required this.icon,
+    required this.label,
+    required this.gradientColors,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: gradientColors,
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(15),
+              boxShadow: [
+                BoxShadow(
+                  color: gradientColors.last.withValues(alpha: 0.28),
+                  blurRadius: 8,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Icon(icon, color: Colors.white, size: 24),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF1E293B),
+            ),
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
       ),
     );
   }
@@ -1391,7 +1564,7 @@ class _ProfileScreen extends StatelessWidget {
             ),
             const SizedBox(height: 18),
 
-            // Translucent Menu Options
+            // Translucent Clean Account Options
             ClipRRect(
               borderRadius: BorderRadius.circular(20),
               child: BackdropFilter(
@@ -1405,99 +1578,15 @@ class _ProfileScreen extends StatelessWidget {
                   child: Column(
                     children: [
                       _ProfileMenuItem(
-                        icon: Icons.vibration,
-                        title: 'Sensor Joran & Kompas',
-                        subtitle: 'Accelerometer deteksi strike & arah navigasi spot',
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => const StrikeDetectorScreen()),
-                          );
-                        },
-                      ),
-                      Divider(height: 1, indent: 56, color: Colors.grey.shade200),
-                      _ProfileMenuItem(
-                        icon: Icons.sports_esports_outlined,
-                        title: 'Mini Game: Reel The Fish',
-                        subtitle: 'Tantangan tarik ikan & kontrol tegangan senar',
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => const ReelTheFishGameScreen()),
-                          );
-                        },
-                      ),
-                      Divider(height: 1, indent: 56, color: Colors.grey.shade200),
-                      _ProfileMenuItem(
-                        icon: Icons.currency_exchange,
-                        title: 'Konversi Uang & Waktu',
-                        subtitle: '4 Kurs (IDR, USD, JPY, EUR) & 4 Zona Waktu (WIB, WITA, WIT, GMT)',
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => const CurrencyTimeConverterScreen()),
-                          );
-                        },
-                      ),
-                      Divider(height: 1, indent: 56, color: Colors.grey.shade200),
-                      _ProfileMenuItem(
-                        icon: Icons.collections_bookmark_outlined,
-                        title: 'Koleksi Ikan (Pokedex)',
-                        subtitle: '$uniqueFish jenis ikan berhasil ditangkap',
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => FishDexScreen(strikes: strikes)),
-                          );
-                        },
-                      ),
-                      Divider(height: 1, indent: 56, color: Colors.grey.shade200),
-                      _ProfileMenuItem(
-                        icon: Icons.place_outlined,
-                        title: 'Spot Favorit',
-                        subtitle: 'Daftar lokasi pemancingan langganan',
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => FavoriteSpotsScreen(strikes: strikes)),
-                          );
-                        },
-                      ),
-                      Divider(height: 1, indent: 56, color: Colors.grey.shade200),
-                      _ProfileMenuItem(
-                        icon: Icons.map_outlined,
-                        title: 'Peta Spot Strike',
-                        subtitle: 'Sebaran titik koordinat GPS hasil pancingan',
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => StrikeMapScreen(strikes: strikes)),
-                          );
-                        },
-                      ),
-                      Divider(height: 1, indent: 56, color: Colors.grey.shade200),
-                      _ProfileMenuItem(
                         icon: Icons.shield_outlined,
                         title: 'Privasi & Keamanan',
-                        subtitle: 'Pengaturan akun dan password',
+                        subtitle: 'Pengaturan akun, biometric login, dan password',
                         onTap: () {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (_) => PrivacySecurityScreen(userEmail: userEmail),
                             ),
-                          );
-                        },
-                      ),
-                      Divider(height: 1, indent: 56, color: Colors.grey.shade200),
-                      _ProfileMenuItem(
-                        icon: Icons.smart_toy_outlined,
-                        title: 'StrikeBot AI Chatbot',
-                        subtitle: 'Tanya rekomendasi umpan & taktik mancing',
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => const StrikeBotScreen()),
                           );
                         },
                       ),
