@@ -12,8 +12,6 @@ import 'reel_the_fish_game_screen.dart';
 import 'currency_time_converter_screen.dart';
 import 'strikebot_screen.dart';
 import 'feedback_course_screen.dart';
-import 'fish_dex_screen.dart';
-import 'favorite_spots_screen.dart';
 import 'privacy_security_screen.dart';
 import 'about_app_screen.dart';
 import 'strike_map_screen.dart';
@@ -443,16 +441,16 @@ class _HomeScreen extends StatelessWidget {
               LayoutBuilder(
                 builder: (context, constraints) {
                   return GridView.count(
-                    crossAxisCount: 4,
+                    crossAxisCount: 3,
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    mainAxisSpacing: 12,
-                    crossAxisSpacing: 8,
-                    childAspectRatio: 0.82,
+                    mainAxisSpacing: 14,
+                    crossAxisSpacing: 12,
+                    childAspectRatio: 1.05,
                     children: [
                       _QuickActionTile(
                         icon: Icons.vibration,
-                        label: 'Sensor Strike',
+                        label: 'Sensor Joran',
                         gradientColors: const [Color(0xFF38BDF8), Color(0xFF0284C7)],
                         onTap: () {
                           Navigator.push(
@@ -484,6 +482,17 @@ class _HomeScreen extends StatelessWidget {
                         },
                       ),
                       _QuickActionTile(
+                        icon: Icons.inventory_2_outlined,
+                        label: 'Kotak Alat',
+                        gradientColors: const [Color(0xFFF97316), Color(0xFFC2410C)],
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const TackleBoxScreen()),
+                          );
+                        },
+                      ),
+                      _QuickActionTile(
                         icon: Icons.sports_esports_outlined,
                         label: 'Mini Game',
                         gradientColors: const [Color(0xFFF472B6), Color(0xFFDB2777)],
@@ -495,46 +504,13 @@ class _HomeScreen extends StatelessWidget {
                         },
                       ),
                       _QuickActionTile(
-                        icon: Icons.menu_book_outlined,
-                        label: 'FishDex',
-                        gradientColors: const [Color(0xFFFBBF24), Color(0xFFD97706)],
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => FishDexScreen(strikes: strikes)),
-                          );
-                        },
-                      ),
-                      _QuickActionTile(
-                        icon: Icons.place_outlined,
-                        label: 'Spot Favorit',
-                        gradientColors: const [Color(0xFF34D399), Color(0xFF059669)],
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => FavoriteSpotsScreen(strikes: strikes)),
-                          );
-                        },
-                      ),
-                      _QuickActionTile(
                         icon: Icons.currency_exchange,
-                        label: 'Kurs & Jam',
+                        label: 'Kurs & Waktu',
                         gradientColors: const [Color(0xFF60A5FA), Color(0xFF2563EB)],
                         onTap: () {
                           Navigator.push(
                             context,
                             MaterialPageRoute(builder: (_) => const CurrencyTimeConverterScreen()),
-                          );
-                        },
-                      ),
-                      _QuickActionTile(
-                        icon: Icons.inventory_2_outlined,
-                        label: 'Kotak Alat',
-                        gradientColors: const [Color(0xFFF97316), Color(0xFFC2410C)],
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => const TackleBoxScreen()),
                           );
                         },
                       ),
