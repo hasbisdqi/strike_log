@@ -33,10 +33,45 @@ class StrikeService {
 
       // Update cache lokal
       await LocalStrikeStorage.cacheStrikes(combined);
+
+      // Auto-sync: Coba upload data lokal yang belum masuk ke Supabase
+      if (currentUserId != null && localOnly.isNotEmpty) {
+        _syncPendingLocalStrikes(localOnly);
+      }
+
       return combined;
     } catch (_) {
       // Fallback offline
       return localData;
+    }
+  }
+
+  /// Sinkronisasi background untuk data strike yang tadinya gagal/offline
+  Future<void> _syncPendingLocalStrikes(List<StrikeModel> pending) async {
+    for (final item in pending) {
+      if (!item.id.startsWith('local_')) continue;
+      try {
+        final res = await _client.from('strikes').insert({
+          'user_id': currentUserId,
+          'fish_name': item.fishName,
+          'weight_kg': item.weightKg,
+          'spot_name': item.spotName,
+          'lure_name': item.lureName,
+          'notes': item.notes,
+          'photo_url': item.photoUrl,
+          'latitude': item.latitude,
+          'longitude': item.longitude,
+          'blockchain_hash': item.blockchainHash,
+          'block_number': item.blockNumber,
+          'caught_at': item.caughtAt.toIso8601String(),
+        }).select().single();
+
+        // Ganti ID lokal dengan ID asli dari Supabase di cache lokal
+        await LocalStrikeStorage.deleteSingle(item.id);
+        await LocalStrikeStorage.addSingle(StrikeModel.fromJson(res));
+      } catch (_) {
+        // Abaikan jika masih offline
+      }
     }
   }
 
