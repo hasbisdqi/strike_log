@@ -69,9 +69,14 @@ class _StrikeDetectorScreenState extends State<StrikeDetectorScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.xl)),
         title: const Row(
           children: [
-            Icon(Icons.warning_amber_rounded, color: AppColors.amberAccent, size: 28),
+            Icon(Icons.warning_amber_rounded, color: AppColors.amberAccent, size: 26),
             SizedBox(width: AppSpacing.sm),
-            Text('STRIKE TERDETEKSI! 🎣', style: TextStyle(fontWeight: FontWeight.bold)),
+            Expanded(
+              child: Text(
+                'STRIKE TERDETEKSI! 🎣',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              ),
+            ),
           ],
         ),
         content: Text(
@@ -102,19 +107,22 @@ class _StrikeDetectorScreenState extends State<StrikeDetectorScreen> {
   }
 
   String _getDirectionLabel(double deg) {
-    if (deg >= 337.5 || deg < 22.5) return 'Utara (N)';
-    if (deg >= 22.5 && deg < 67.5) return 'Timur Laut (NE)';
-    if (deg >= 67.5 && deg < 112.5) return 'Timur (E)';
-    if (deg >= 112.5 && deg < 157.5) return 'Tenggara (SE)';
-    if (deg >= 157.5 && deg < 202.5) return 'Selatan (S)';
-    if (deg >= 202.5 && deg < 247.5) return 'Barat Daya (SW)';
-    if (deg >= 247.5 && deg < 292.5) return 'Barat (W)';
+    // Normalisasi degree ke rentang 0 - 360
+    final normalized = (deg % 360 + 360) % 360;
+    if (normalized >= 337.5 || normalized < 22.5) return 'Utara (N)';
+    if (normalized >= 22.5 && normalized < 67.5) return 'Timur Laut (NE)';
+    if (normalized >= 67.5 && normalized < 112.5) return 'Timur (E)';
+    if (normalized >= 112.5 && normalized < 157.5) return 'Tenggara (SE)';
+    if (normalized >= 157.5 && normalized < 202.5) return 'Selatan (S)';
+    if (normalized >= 202.5 && normalized < 247.5) return 'Barat Daya (SW)';
+    if (normalized >= 247.5 && normalized < 292.5) return 'Barat (W)';
     return 'Barat Laut (NW)';
   }
 
   @override
   Widget build(BuildContext context) {
-    final headingDeg = _heading ?? 0.0;
+    final rawHeading = _heading ?? 0.0;
+    final headingDeg = (rawHeading % 360 + 360) % 360;
     final forceRatio = (_currentForce / _strikeThreshold).clamp(0.0, 1.0);
 
     return Scaffold(
@@ -136,18 +144,16 @@ class _StrikeDetectorScreenState extends State<StrikeDetectorScreen> {
               child: Column(
                 children: [
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Row(
-                        children: [
-                          Icon(Icons.vibration, color: AppColors.primary, size: 24),
-                          SizedBox(width: AppSpacing.sm),
-                          Text(
-                            'Detektor Sentakan (Accelerometer)',
-                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                          ),
-                        ],
+                      const Icon(Icons.vibration, color: AppColors.primary, size: 22),
+                      const SizedBox(width: AppSpacing.sm),
+                      const Expanded(
+                        child: Text(
+                          'Detektor Sentakan (Accelerometer)',
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                        ),
                       ),
+                      const SizedBox(width: 6),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
