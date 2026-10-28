@@ -591,7 +591,7 @@ class _HomeScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-                // const SizedBox(height: 22),
+                const SizedBox(height: 12),
 
                 // D. Strike Terbaru
                 Row(

@@ -16,8 +16,21 @@ class TackleBoxService {
   /// Ambil semua gear milik user (offline Hive + Supabase sync)
   static Future<List<GearItem>> getUserGears() async {
     final box = await _getBox();
-    final rawList = box.get('items', defaultValue: <dynamic>[]) as List;
+    final isInitialized = box.get('is_initialized', defaultValue: false) as bool;
 
+    if (!isInitialized) {
+      final defaultGears = [
+        MasterGearCatalog.allItems[0], // Shimano Stradic
+        MasterGearCatalog.allItems[6], // Relix Cangkek
+        MasterGearCatalog.allItems[11], // Rapala X-Rap
+        MasterGearCatalog.allItems[17], // PE Duraking
+      ];
+      await box.put('is_initialized', true);
+      await saveUserGears(defaultGears);
+      return defaultGears;
+    }
+
+    final rawList = box.get('items', defaultValue: <dynamic>[]) as List;
     List<GearItem> localGears = rawList.map((item) {
       if (item is Map) {
         return GearItem.fromJson(Map<String, dynamic>.from(item));
@@ -26,17 +39,6 @@ class TackleBoxService {
       }
       return GearItem.fromJson(Map<String, dynamic>.from(item as Map));
     }).toList();
-
-    // Default starter gear jika box kosong pertama kali
-    if (localGears.isEmpty) {
-      localGears = [
-        MasterGearCatalog.allItems[0], // Shimano Stradic
-        MasterGearCatalog.allItems[6], // Relix Cangkek
-        MasterGearCatalog.allItems[11], // Rapala X-Rap
-        MasterGearCatalog.allItems[17], // PE Duraking
-      ];
-      await saveUserGears(localGears);
-    }
 
     return localGears;
   }
@@ -51,7 +53,7 @@ class TackleBoxService {
     try {
       final user = SupabaseConfig.client.auth.currentUser;
       if (user != null) {
-        await SupabaseConfig.client.from('user_profiles').upsert({
+        await SupabaseConfig.client.from('profiles').upsert({
           'id': user.id,
           'tackle_box': rawList,
           'updated_at': DateTime.now().toIso8601String(),
