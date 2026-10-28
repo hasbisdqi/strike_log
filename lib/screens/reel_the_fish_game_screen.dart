@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:sensors_plus/sensors_plus.dart';
 import '../core/theme/app_tokens.dart';
 import '../services/game_leaderboard_service.dart';
 import 'widgets/game_leaderboard_sheet.dart';
@@ -32,6 +33,17 @@ class _ReelTheFishGameScreenState extends State<ReelTheFishGameScreen>
   // Fish State: Normal swim vs Thrashing/Run
   bool _isFishThrashing = false;
   double _fishXOffset = 0.0; // -1.0 to 1.0
+
+  // Counter-Steering Mechanics (Sensors: Accelerometer + Gyroscope integration)
+  StreamSubscription<AccelerometerEvent>? _accelSub;
+  StreamSubscription<GyroscopeEvent>? _gyroSub;
+  double _baselineTilt = 0.0; // Calibrated neutral X-axis tilt
+  double _rawDeviceTilt = 0.0; // Raw sensor reading
+  double _filteredTilt = 0.0; // Low-pass filtered tilt angle (-1.0 to 1.0)
+  int _fishDirection = 0; // -1 = Left, 0 = Center/Neutral, 1 = Right
+  String _tiltStatus = 'neutral'; // 'correct', 'wrong', 'neutral'
+  double _tiltIntensity = 0.0; // 0.0 to 1.0
+  bool _hasSensors = true;
 
   Timer? _gameLoopTimer;
   Timer? _biteWaitTimer;
@@ -104,6 +116,7 @@ class _ReelTheFishGameScreenState extends State<ReelTheFishGameScreen>
 
   @override
   void dispose() {
+    _stopSensors();
     _gameLoopTimer?.cancel();
     _biteWaitTimer?.cancel();
     _thrashCycleTimer?.cancel();
@@ -111,7 +124,55 @@ class _ReelTheFishGameScreenState extends State<ReelTheFishGameScreen>
     super.dispose();
   }
 
+  void _startSensors() {
+    _stopSensors();
+    // Calibrate baseline when hooking starts
+    _baselineTilt = _rawDeviceTilt;
+    _filteredTilt = 0.0;
+    _tiltStatus = 'neutral';
+    _tiltIntensity = 0.0;
+
+    try {
+      _accelSub = accelerometerEventStream().listen(
+        (event) {
+          // X-axis: tilting left tilts event.x positive, right negative (in portrait)
+          // We normalize and apply low-pass filter
+          _rawDeviceTilt = event.x;
+          final relativeTilt = (event.x - _baselineTilt).clamp(-9.8, 9.8);
+          // Normalized tilt: positive = device tilted left, negative = device tilted right
+          final targetNormalized = (relativeTilt / 6.0).clamp(-1.0, 1.0);
+          _filteredTilt = (_filteredTilt * 0.75) + (targetNormalized * 0.25);
+        },
+        onError: (_) {
+          _hasSensors = false;
+        },
+        cancelOnError: false,
+      );
+
+      _gyroSub = gyroscopeEventStream().listen(
+        (_) {
+          // Gyroscope alive confirmation
+        },
+        onError: (_) {},
+        cancelOnError: false,
+      );
+    } catch (_) {
+      _hasSensors = false;
+    }
+  }
+
+  void _stopSensors() {
+    _accelSub?.cancel();
+    _accelSub = null;
+    _gyroSub?.cancel();
+    _gyroSub = null;
+    _filteredTilt = 0.0;
+    _tiltStatus = 'neutral';
+    _tiltIntensity = 0.0;
+  }
+
   void _castLine() {
+    _stopSensors();
     _biteWaitTimer?.cancel();
     _gameLoopTimer?.cancel();
     _thrashCycleTimer?.cancel();
@@ -127,6 +188,9 @@ class _ReelTheFishGameScreenState extends State<ReelTheFishGameScreen>
       _isFishStunned = false;
       _isFishThrashing = false;
       _fishXOffset = 0.0;
+      _fishDirection = 0;
+      _tiltStatus = 'neutral';
+      _tiltIntensity = 0.0;
     });
 
     final delaySeconds = 2 + _rnd.nextInt(3);
@@ -146,6 +210,12 @@ class _ReelTheFishGameScreenState extends State<ReelTheFishGameScreen>
 
     HapticFeedback.heavyImpact();
 
+    // Start counter-steering sensors calibrated to current device position
+    _startSensors();
+
+    final initialOffset = (_rnd.nextDouble() * 2.0 - 1.0) * 0.75;
+    final initialDir = initialOffset < -0.15 ? -1 : (initialOffset > 0.15 ? 1 : 0);
+
     setState(() {
       _gameState = 'hooked';
       _currentFishName = fish['name'] as String;
@@ -157,6 +227,10 @@ class _ReelTheFishGameScreenState extends State<ReelTheFishGameScreen>
       _hookGauge = 0.0;
       _isFishStunned = false;
       _isFishThrashing = true;
+      _fishXOffset = initialOffset;
+      _fishDirection = initialDir;
+      _tiltStatus = 'neutral';
+      _tiltIntensity = 0.0;
     });
 
     // Fish thrash vs calm rhythm
@@ -166,9 +240,14 @@ class _ReelTheFishGameScreenState extends State<ReelTheFishGameScreen>
         return;
       }
       if (!_isFishStunned) {
+        final isThrashing = _rnd.nextDouble() > 0.40;
+        final newOffset = isThrashing ? (_rnd.nextDouble() * 2.0 - 1.0) * 0.75 : 0.0;
+        final newDir = newOffset < -0.18 ? -1 : (newOffset > 0.18 ? 1 : 0);
+
         setState(() {
-          _isFishThrashing = _rnd.nextDouble() > 0.45;
-          _fishXOffset = (_rnd.nextDouble() * 2.0 - 1.0) * 0.75;
+          _isFishThrashing = isThrashing;
+          _fishXOffset = newOffset;
+          _fishDirection = newDir;
         });
         if (_isFishThrashing) {
           HapticFeedback.lightImpact();
@@ -189,6 +268,33 @@ class _ReelTheFishGameScreenState extends State<ReelTheFishGameScreen>
           if (_stunDurationRemaining <= 0.0) {
             _isFishStunned = false;
           }
+        }
+
+        // --- Counter-Steering Calculation ---
+        // _filteredTilt: positive = device tilted left, negative = device tilted right
+        const deadZone = 0.15;
+        int playerTiltDir = 0; // -1 = tilted right, +1 = tilted left
+        if (_filteredTilt.abs() > deadZone) {
+          playerTiltDir = _filteredTilt > 0 ? 1 : -1;
+          _tiltIntensity = ((_filteredTilt.abs() - deadZone) / (1.0 - deadZone)).clamp(0.0, 1.0);
+        } else {
+          _tiltIntensity = 0.0;
+        }
+
+        // Logic counter-steering:
+        // Fish runs Left (_fishDirection == -1) -> Player must tilt Right (playerTiltDir == -1)
+        // Fish runs Right (_fishDirection == 1) -> Player must tilt Left (playerTiltDir == 1)
+        if (_isFishThrashing && !_isFishStunned && _fishDirection != 0 && _hasSensors) {
+          final targetTiltDir = -_fishDirection; // counter direction
+          if (playerTiltDir == targetTiltDir) {
+            _tiltStatus = 'correct';
+          } else if (playerTiltDir == 0) {
+            _tiltStatus = 'neutral';
+          } else {
+            _tiltStatus = 'wrong';
+          }
+        } else {
+          _tiltStatus = 'neutral';
         }
 
         // 1. Reel Input Handling (Fishing Hook Style)
@@ -223,9 +329,20 @@ class _ReelTheFishGameScreenState extends State<ReelTheFishGameScreen>
           }
         }
 
-        // 2. Fish Thrash Tension Penalty
+        // 2. Counter-Steering Gameplay Impact on Tension & Fatigue
         if (_isFishThrashing && !_isFishStunned) {
-          _tension += (0.65 * power);
+          if (_tiltStatus == 'correct') {
+            // Correct tilt: relieves tension significantly and drains fish HP faster
+            final relief = 1.0 * (0.6 + (_tiltIntensity * 0.4));
+            _tension = max(5.0, _tension - relief);
+            _fishHp = max(0.0, _fishHp - (0.25 * power));
+          } else if (_tiltStatus == 'wrong') {
+            // Wrong tilt: severely escalates tension
+            _tension += (1.8 * power);
+          } else {
+            // Neutral tilt: normal thrashing penalty
+            _tension += (0.65 * power);
+          }
         }
 
         // Haptic warning when approaching snap line
@@ -236,7 +353,7 @@ class _ReelTheFishGameScreenState extends State<ReelTheFishGameScreen>
         // 3. Lose Conditions
         // Line snapped (Tension over 96%)
         if (_tension >= 96.0) {
-          _gameOver(lostReason: 'Senar Putus! Terlalu lama menahan reel di zona merah.');
+          _gameOver(lostReason: 'Senar Putus! Terlalu lama menahan reel di zona merah atau salah arah tilt.');
         }
         // Fish ran too far (> 50m)
         else if (_distanceMeters >= 50.0) {
@@ -269,6 +386,7 @@ class _ReelTheFishGameScreenState extends State<ReelTheFishGameScreen>
   }
 
   void _gameOver({required String lostReason}) {
+    _stopSensors();
     _gameLoopTimer?.cancel();
     _thrashCycleTimer?.cancel();
     HapticFeedback.heavyImpact();
@@ -311,6 +429,7 @@ class _ReelTheFishGameScreenState extends State<ReelTheFishGameScreen>
   }
 
   void _gameWin() {
+    _stopSensors();
     _gameLoopTimer?.cancel();
     _thrashCycleTimer?.cancel();
     HapticFeedback.heavyImpact();
@@ -530,6 +649,34 @@ class _ReelTheFishGameScreenState extends State<ReelTheFishGameScreen>
               child: Stack(
                 alignment: Alignment.center,
                 children: [
+                  // Fishing Rod Visual (Rotates based on device tilt)
+                  if (_gameState == 'hooked')
+                    Positioned(
+                      bottom: -15,
+                      child: Transform.rotate(
+                        angle: -_filteredTilt * 0.45,
+                        alignment: Alignment.bottomCenter,
+                        child: Container(
+                          width: 8,
+                          height: 120,
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFFE2E8F0), Color(0xFF64748B), Color(0xFF334155)],
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                            ),
+                            borderRadius: BorderRadius.circular(4),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.35),
+                                blurRadius: 6,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+
                   // Top Status Header
                   Positioned(
                     top: 12,
@@ -557,8 +704,8 @@ class _ReelTheFishGameScreenState extends State<ReelTheFishGameScreen>
                                 ? 'Menunggu sambaran kail...'
                                 : _gameState == 'hooked'
                                     ? (_isFishStunned
-                                        ? '⚡ IKAN PINGSAN! GULUNG CEPAT!'
-                                        : (_isFishThrashing ? 'IKAN BERONTAK! HATI-HATI SENAR' : 'IKAN TENANG - TARIK REEL'))
+                                        ? 'IKAN PINGSAN! GULUNG CEPAT!'
+                                        : (_isFishThrashing ? 'IKAN BERONTAK! IMBANGI ARAH JORAN' : 'IKAN TENANG - TARIK REEL'))
                                     : 'Lempar kail ke spot',
                             style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 12),
                           ),
@@ -566,6 +713,68 @@ class _ReelTheFishGameScreenState extends State<ReelTheFishGameScreen>
                       ),
                     ),
                   ),
+
+                  // Counter-Steering Guidance Banner (Right below top status)
+                  if (_gameState == 'hooked' && _isFishThrashing && !_isFishStunned && _fishDirection != 0)
+                    Positioned(
+                      top: 48,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: _tiltStatus == 'correct'
+                              ? const Color(0xFF059669).withValues(alpha: 0.9)
+                              : (_tiltStatus == 'wrong'
+                                  ? const Color(0xFFDC2626).withValues(alpha: 0.9)
+                                  : Colors.black.withValues(alpha: 0.7)),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: _tiltStatus == 'correct'
+                                ? const Color(0xFF34D399)
+                                : (_tiltStatus == 'wrong' ? const Color(0xFFF87171) : Colors.white24),
+                            width: 1.5,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: (_tiltStatus == 'correct'
+                                      ? const Color(0xFF059669)
+                                      : (_tiltStatus == 'wrong' ? const Color(0xFFDC2626) : Colors.black))
+                                  .withValues(alpha: 0.4),
+                              blurRadius: 10,
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              _fishDirection < 0 ? Icons.arrow_back : Icons.arrow_forward,
+                              color: Colors.white,
+                              size: 16,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              _fishDirection < 0 ? 'IKAN KE KIRI -> MIRINGKAN HP KE KANAN' : 'IKAN KE KANAN -> MIRINGKAN HP KE KIRI',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w800,
+                                fontSize: 11,
+                                letterSpacing: 0.3,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Icon(
+                              _tiltStatus == 'correct'
+                                  ? Icons.check_circle_rounded
+                                  : (_tiltStatus == 'wrong' ? Icons.cancel_rounded : Icons.screen_rotation_rounded),
+                              color: _tiltStatus == 'correct'
+                                  ? const Color(0xFFA7F3D0)
+                                  : (_tiltStatus == 'wrong' ? const Color(0xFFFECACA) : Colors.white70),
+                              size: 16,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
 
                   // Center Animation
                   if (_gameState == 'waiting')
@@ -780,6 +989,85 @@ class _ReelTheFishGameScreenState extends State<ReelTheFishGameScreen>
                         backgroundColor: const Color(0xFFF1F5F9),
                         valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFEAB308)),
                       ),
+                    ),
+                    const SizedBox(height: 14),
+
+                    // Counter-Steering Tilt Meter
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Row(
+                          children: [
+                            Icon(Icons.screen_rotation_rounded, color: Color(0xFF0284C7), size: 16),
+                            SizedBox(width: 4),
+                            Text(
+                              'COUNTER-STEERING TILT',
+                              style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: Color(0xFF64748B)),
+                            ),
+                          ],
+                        ),
+                        Text(
+                          _tiltStatus == 'correct'
+                              ? 'SEIMBANG (+1.0x)'
+                              : (_tiltStatus == 'wrong' ? 'BAHAYA (-2.0x)' : 'NETRAL'),
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w800,
+                            color: _tiltStatus == 'correct'
+                                ? const Color(0xFF059669)
+                                : (_tiltStatus == 'wrong' ? const Color(0xFFDC2626) : const Color(0xFF64748B)),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        Container(
+                          height: 10,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFE2E8F0),
+                            borderRadius: BorderRadius.circular(5),
+                          ),
+                        ),
+                        // Center zero-marker
+                        Container(
+                          width: 3,
+                          height: 14,
+                          color: const Color(0xFF64748B),
+                        ),
+                        // Dynamic indicator needle
+                        FractionalTranslation(
+                          translation: Offset(-_filteredTilt.clamp(-1.0, 1.0) * 0.9, 0),
+                          child: Container(
+                            width: 14,
+                            height: 14,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: _tiltStatus == 'correct'
+                                  ? const Color(0xFF059669)
+                                  : (_tiltStatus == 'wrong' ? const Color(0xFFDC2626) : const Color(0xFF0284C7)),
+                              border: Border.all(color: Colors.white, width: 2),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.2),
+                                  blurRadius: 4,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    const Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('TILT KIRI', style: TextStyle(color: Color(0xFF94A3B8), fontSize: 9.5, fontWeight: FontWeight.bold)),
+                        Text('POSISI JORAN', style: TextStyle(color: Color(0xFF64748B), fontSize: 9.5, fontWeight: FontWeight.w700)),
+                        Text('TILT KANAN', style: TextStyle(color: Color(0xFF94A3B8), fontSize: 9.5, fontWeight: FontWeight.bold)),
+                      ],
                     ),
                   ],
                 ),
