@@ -4,6 +4,7 @@ import '../core/supabase_config.dart';
 import '../core/theme/app_tokens.dart';
 import '../core/theme/glass_card.dart';
 import '../core/utils/custom_toast.dart';
+import '../services/local_notification_service.dart';
 
 class PrivacySecurityScreen extends StatefulWidget {
   final String? userEmail;
@@ -145,6 +146,41 @@ class _PrivacySecurityScreenState extends State<PrivacySecurityScreen> {
                         ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
                         : const Icon(Icons.check),
                     label: Text(_isLoading ? 'Menyimpan...' : 'Perbarui Password'),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+
+            // Notification Test Card
+            GlassCard(
+              padding: const EdgeInsets.all(AppSpacing.xl),
+              borderRadius: AppRadius.xxl,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Uji Coba Notifikasi', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                  const SizedBox(height: 6),
+                  const Text(
+                    'Kirim notifikasi lokal ke perangkat untuk memastikan izin notifikasi aktif.',
+                    style: TextStyle(fontSize: 12, color: AppColors.textMuted),
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                  OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                      minimumSize: const Size.fromHeight(48),
+                      side: const BorderSide(color: AppColors.primary),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    onPressed: () async {
+                      await LocalNotificationService.requestPermission();
+                      await LocalNotificationService.showTestNotification();
+                      if (context.mounted) {
+                        CustomToast.showSuccess(context, 'Notifikasi test terkirim!');
+                      }
+                    },
+                    icon: const Icon(Icons.notifications_active_outlined, color: AppColors.primary),
+                    label: const Text('Kirim Test Notifikasi', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.primary)),
                   ),
                 ],
               ),
