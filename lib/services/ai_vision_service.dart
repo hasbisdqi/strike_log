@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
-import 'package:http/http.dart' as http;
 import '../core/app_config.dart';
+import '../core/supabase_config.dart';
 
 class AiFishScanResult {
   final String fishName;
@@ -21,88 +21,43 @@ class AiFishScanResult {
 }
 
 class AiVisionService {
-  /// Analisis foto ikan: panggil Gemini 2.5 Flash Vision, fallback cerdas jika offline
+  /// Analisis foto ikan: panggil Supabase Edge Function 'gemini', fallback cerdas jika offline
   static Future<AiFishScanResult> scanFishPhoto(File photoFile) async {
-    final apiKey = AppConfig.geminiApiKey;
+    try {
+      final bytes = await photoFile.readAsBytes();
+      final base64Image = base64Encode(bytes);
 
-    if (apiKey.isNotEmpty) {
-      try {
-        final bytes = await photoFile.readAsBytes();
-        final base64Image = base64Encode(bytes);
+      final response = await SupabaseConfig.client.functions.invoke(
+        AppConfig.geminiFunctionName,
+        body: {
+          'action': 'vision',
+          'base64Image': base64Image,
+          'mimeType': 'image/jpeg',
+        },
+      );
 
-        final url = Uri.parse(
-          'https://generativelanguage.googleapis.com/v1beta/models/${AppConfig.geminiModel}:generateContent?key=$apiKey',
-        );
-
-        final prompt = 'Kamu adalah ahli biologi perikanan dan pemancing profesional. '
-            'Analisis foto ini. Identifikasi spesies ikannya (atau ikan air tawar/laut tropis Indonesia terdekat jika foto kurang jelas). '
-            'Berikan estimasi berat tangkapan realistis dalam kg, umpan/lure paling tepat, dan catatan deskripsi singkat 1-2 kalimat. '
-            'Jawab HANYA dalam format JSON valid persis seperti ini (tanpa markdown backtick): '
-            '{"fish_name":"Nama Ikan", "estimated_weight": 1.5, "recommended_lure":"Nama Umpan", "description":"Deskripsi singkat"}';
-
-        final body = jsonEncode({
-          'contents': [
-            {
-              'parts': [
-                {'text': prompt},
-                {
-                  'inline_data': {
-                    'mime_type': 'image/jpeg',
-                    'data': base64Image,
-                  }
-                }
-              ]
-            }
-          ]
-        });
-
-        final resp = await http
-            .post(url, headers: {'Content-Type': 'application/json'}, body: body)
-            .timeout(const Duration(seconds: 15));
-
-        if (resp.statusCode == 200) {
-          final data = jsonDecode(resp.body);
-          final candidates = data['candidates'] as List?;
-          if (candidates != null && candidates.isNotEmpty) {
-            final content = candidates[0]['content'];
-            final parts = content['parts'] as List;
-            // Handle possibility of model thoughts part
-            String text = '';
-            for (final part in parts) {
-              if (part['text'] != null && (part['thought'] != true)) {
-                text += part['text'] as String;
-              }
-            }
-            if (text.isEmpty && parts.isNotEmpty) {
-              text = parts.last['text'] as String? ?? '';
-            }
-
-            final startIdx = text.indexOf('{');
-            final endIdx = text.lastIndexOf('}');
-            if (startIdx != -1 && endIdx != -1 && endIdx > startIdx) {
-              final jsonStr = text.substring(startIdx, endIdx + 1);
-              final parsed = jsonDecode(jsonStr);
-
-              final rawWeight = parsed['estimated_weight'];
-              double weight = 1.2;
-              if (rawWeight is num) {
-                weight = rawWeight.toDouble();
-              } else if (rawWeight is String) {
-                weight = double.tryParse(rawWeight.replaceAll(RegExp(r'[^0-9.]'), '')) ?? 1.2;
-              }
-
-              return AiFishScanResult(
-                fishName: parsed['fish_name']?.toString() ?? 'Ikan Tangkapan Unik',
-                estimatedWeightKg: weight <= 0.0 ? 0.8 : double.parse(weight.toStringAsFixed(1)),
-                recommendedLure: parsed['recommended_lure']?.toString() ?? 'Umpan Lure / Udang Hidup',
-                description: parsed['description']?.toString() ?? 'Teridentifikasi lewat Gemini AI Vision.',
-                confidence: 0.95,
-              );
-            }
+      final data = response.data;
+      if (response.status == 200 && data != null && data is Map) {
+        if (data['success'] == true && data['data'] != null) {
+          final parsed = data['data'] as Map;
+          final rawWeight = parsed['estimated_weight'];
+          double weight = 1.2;
+          if (rawWeight is num) {
+            weight = rawWeight.toDouble();
+          } else if (rawWeight is String) {
+            weight = double.tryParse(rawWeight.replaceAll(RegExp(r'[^0-9.]'), '')) ?? 1.2;
           }
+
+          return AiFishScanResult(
+            fishName: parsed['fish_name']?.toString() ?? 'Ikan Tangkapan Unik',
+            estimatedWeightKg: weight <= 0.0 ? 0.8 : double.parse(weight.toStringAsFixed(1)),
+            recommendedLure: parsed['recommended_lure']?.toString() ?? 'Umpan Lure / Udang Hidup',
+            description: parsed['description']?.toString() ?? 'Teridentifikasi lewat Gemini AI Vision.',
+            confidence: 0.95,
+          );
         }
-      } catch (_) {}
-    }
+      }
+    } catch (_) {}
 
     // Dynamic heuristic fallback jika tidak ada internet / quota limit
     await Future.delayed(const Duration(milliseconds: 1000));

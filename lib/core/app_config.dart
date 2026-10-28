@@ -1,7 +1,8 @@
 class AppConfig {
-  /// Di-pass saat run: --dart-define=GEMINI_API_KEY=xxx
-  static const String geminiApiKey = String.fromEnvironment('GEMINI_API_KEY');
+  /// Nama Supabase Edge Function untuk layanan Gemini AI
+  static const String geminiFunctionName = 'gemini';
 
-  /// Model endpoint yang didukung di v1beta
+  /// Model endpoint Gemini aktif
   static const String geminiModel = 'gemini-2.5-flash';
 }
+

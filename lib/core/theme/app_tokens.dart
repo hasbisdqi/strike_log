@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 
 class AppColors {
   // Primary Marine / Fresh Sky Palette
-  static const Color primary = Color(0xFF0284C7);
+  static const Color primary = Color(0xFF009FE3); // Ocean Blue
   static const Color primaryLight = Color(0xFF38BDF8);
-  static const Color primaryDark = Color(0xFF0369A1);
+  static const Color primaryDark = Color(0xFF0077B6);
   static const Color primaryContainer = Color(0xFFE0F2FE);
 
   // Background
-  static const Color background = Color(0xFFF0F9FF);
+  static const Color background = Color(0xFFEAF7FC); // Requested light blue
   static const Color cardSurface = Colors.white;
 
   // Accents
@@ -34,7 +34,7 @@ class AppColors {
   );
 
   static const LinearGradient heroGradient = LinearGradient(
-    colors: [Color(0xFF0284C7), Color(0xFF38BDF8)],
+    colors: [Color(0xFF009FE3), Color(0xFF38BDF8)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );

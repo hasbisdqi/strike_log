@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../core/supabase_config.dart';
+import '../core/theme/app_tokens.dart';
 
 import '../models/strike_model.dart';
 import '../services/strike_service.dart';
@@ -78,6 +79,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         strikes: _strikes,
         isLoading: _isLoading,
         onRefresh: _loadStrikes,
+        onAddTap: _openAddStrikePage,
         onDelete: (id) async {
           await _strikeService.deleteStrike(id);
           _loadStrikes();
@@ -99,85 +101,77 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       bottomNavigationBar: SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(30),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
-              child: Container(
-                height: 68,
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.72),
-                  borderRadius: BorderRadius.circular(30),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.5),
-                    width: 1.5,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF0284C7).withValues(alpha: 0.12),
-                      blurRadius: 24,
-                      offset: const Offset(0, 8),
-                    ),
-                  ],
+          child: Container(
+            height: 72,
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(24),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF009FE3).withValues(alpha: 0.14),
+                  blurRadius: 20,
+                  offset: const Offset(0, 6),
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    _NavBarItem(
-                      icon: Icons.home_outlined,
-                      activeIcon: Icons.home,
-                      label: 'Beranda',
-                      isSelected: _currentIndex == 0,
-                      onTap: () => setState(() => _currentIndex = 0),
-                    ),
-                    _NavBarItem(
-                      icon: Icons.phishing_outlined,
-                      activeIcon: Icons.phishing,
-                      label: 'Logs',
-                      isSelected: _currentIndex == 1,
-                      onTap: () => setState(() => _currentIndex = 1),
-                    ),
-                    GestureDetector(
-                      onTap: _openAddStrikePage,
-                      child: Container(
-                        width: 50,
-                        height: 50,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFF38BDF8), Color(0xFF0284C7)],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFF0284C7).withValues(alpha: 0.35),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.04),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _NavBarItem(
+                  icon: Icons.home_outlined,
+                  activeIcon: Icons.home_rounded,
+                  label: 'Beranda',
+                  isSelected: _currentIndex == 0,
+                  onTap: () => setState(() => _currentIndex = 0),
+                ),
+                _NavBarItem(
+                  icon: Icons.phishing_outlined,
+                  activeIcon: Icons.phishing,
+                  label: 'Logs',
+                  isSelected: _currentIndex == 1,
+                  onTap: () => setState(() => _currentIndex = 1),
+                ),
+                // Blue FAB button in center
+                GestureDetector(
+                  onTap: _openAddStrikePage,
+                  child: Container(
+                    width: 52,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      color: AppColors.primary,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.primary.withValues(alpha: 0.4),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
                         ),
-                        child: const Icon(Icons.add, color: Colors.white, size: 28),
-                      ),
+                      ],
                     ),
-                    _NavBarItem(
-                      icon: Icons.leaderboard_outlined,
-                      activeIcon: Icons.leaderboard,
-                      label: 'Statistik',
-                      isSelected: _currentIndex == 2,
-                      onTap: () => setState(() => _currentIndex = 2),
-                    ),
-                    _NavBarItem(
-                      icon: Icons.person_outline,
-                      activeIcon: Icons.person,
-                      label: 'Profil',
-                      isSelected: _currentIndex == 3,
-                      onTap: () => setState(() => _currentIndex = 3),
-                    ),
-                  ],
+                    child: const Icon(Icons.add_rounded, color: Colors.white, size: 30),
+                  ),
                 ),
-              ),
+                _NavBarItem(
+                  icon: Icons.bar_chart_outlined,
+                  activeIcon: Icons.bar_chart_rounded,
+                  label: 'Statistik',
+                  isSelected: _currentIndex == 2,
+                  onTap: () => setState(() => _currentIndex = 2),
+                ),
+                _NavBarItem(
+                  icon: Icons.person_outline_rounded,
+                  activeIcon: Icons.person_rounded,
+                  label: 'Profil',
+                  isSelected: _currentIndex == 3,
+                  onTap: () => setState(() => _currentIndex = 3),
+                ),
+              ],
             ),
           ),
         ),
@@ -203,25 +197,25 @@ class _NavBarItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = isSelected ? const Color(0xFF0284C7) : Colors.grey.shade600;
+    final color = isSelected ? AppColors.primary : const Color(0xFF94A3B8);
 
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(16),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(isSelected ? activeIcon : icon, color: color, size: 24),
-            const SizedBox(height: 2),
+            const SizedBox(height: 3),
             Text(
               label,
               style: TextStyle(
                 color: color,
                 fontSize: 11,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
               ),
             ),
           ],
@@ -244,346 +238,453 @@ class _HomeScreen extends StatelessWidget {
     required this.onRefresh,
   });
 
+  String _getDisplayName() {
+    if (userEmail == null || userEmail!.isEmpty) return 'Angler';
+    final part = userEmail!.split('@').first.trim();
+    if (part.isEmpty) return 'Angler';
+    return part[0].toUpperCase() + part.substring(1);
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final totalWeight = strikes.fold<double>(0.0, (sum, item) => sum + item.weightKg);
-    final maxWeight = strikes.isEmpty
+
+    // Filter valid positive weights
+    final validWeights = strikes.map((e) => e.weightKg).where((w) => w > 0.0).toList();
+    final totalWeight = validWeights.fold<double>(0.0, (sum, w) => sum + w);
+    final maxWeight = validWeights.isEmpty
         ? 0.0
-        : strikes.map((e) => e.weightKg).reduce((a, b) => a > b ? a : b);
+        : validWeights.reduce((a, b) => a > b ? a : b);
+
+    // Total unique spots visited
+    final visitedSpots = strikes
+        .map((s) => s.spotName.trim())
+        .where((s) => s.isNotEmpty && s.toLowerCase() != 'spot rahasia' && s.toLowerCase() != 'unknown spot')
+        .toSet()
+        .length;
+
+    final displayName = _getDisplayName();
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF0F9FF), // Soft fresh sky-blue tint
-      appBar: AppBar(
-        title: const Text(
-          'Strike Log',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        centerTitle: true,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-      ),
-      body: RefreshIndicator(
-        onRefresh: onRefresh,
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Hero Banner with Translucent Glassmorphism
-              ClipRRect(
-                borderRadius: BorderRadius.circular(24),
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-                  child: Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          const Color(0xFF0284C7).withValues(alpha: 0.88),
-                          const Color(0xFF38BDF8).withValues(alpha: 0.75),
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(24),
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.4),
-                        width: 1.5,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFF0284C7).withValues(alpha: 0.25),
-                          blurRadius: 18,
-                          offset: const Offset(0, 8),
+      backgroundColor: const Color(0xFFF8FAFC),
+      body: SafeArea(
+        bottom: false,
+        child: RefreshIndicator(
+          color: AppColors.primary,
+          onRefresh: onRefresh,
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 12),
+
+                // A. Header (Compact, modern, fishing-themed, not too tall)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'STRIKE LOG',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 1.2,
+                            color: AppColors.primary,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Halo, $displayName',
+                          style: const TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: -0.4,
+                            color: Color(0xFF0F172A),
+                          ),
                         ),
                       ],
                     ),
-                    child: Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.22),
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.4),
-                            ),
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.04),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
                           ),
-                          child: const Icon(Icons.phishing, color: Colors.white, size: 32),
+                        ],
+                      ),
+                      child: Center(
+                        child: Text(
+                          displayName.isNotEmpty ? displayName[0].toUpperCase() : 'A',
+                          style: const TextStyle(
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.w800,
+                            fontSize: 18,
+                          ),
                         ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+
+                // B. Summary Statistics (Unified Hero Card)
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0F172A), // Deep angler navy
+                    borderRadius: BorderRadius.circular(24),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF0F172A).withValues(alpha: 0.16),
+                        blurRadius: 18,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Row(
                             children: [
-                              const Text(
-                                'Salam Satu Joran! 🎣',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
+                              Icon(Icons.waves, color: Color(0xFF38BDF8), size: 16),
+                              SizedBox(width: 6),
                               Text(
-                                userEmail ?? 'pemancing@strikelog.com',
+                                'RINGKASAN LOGBOOK',
                                 style: TextStyle(
-                                  color: Colors.white.withValues(alpha: 0.9),
-                                  fontSize: 13,
+                                  color: Color(0xFF94A3B8),
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 1.0,
                                 ),
                               ),
                             ],
                           ),
-                        ),
-                      ],
-                    ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              '${strikes.length} Strike',
+                              style: const TextStyle(
+                                color: Color(0xFF38BDF8),
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 18),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Total Tangkapan',
+                                  style: TextStyle(color: Color(0xFF94A3B8), fontSize: 12),
+                                ),
+                                const SizedBox(height: 4),
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.baseline,
+                                  textBaseline: TextBaseline.alphabetic,
+                                  children: [
+                                    Text(
+                                      '${strikes.length}',
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 26,
+                                        fontWeight: FontWeight.w800,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    const Text(
+                                      'ekor',
+                                      style: TextStyle(color: Color(0xFF64748B), fontSize: 13),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          Container(
+                            width: 1,
+                            height: 38,
+                            color: Colors.white.withValues(alpha: 0.12),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Total Berat',
+                                  style: TextStyle(color: Color(0xFF94A3B8), fontSize: 12),
+                                ),
+                                const SizedBox(height: 4),
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.baseline,
+                                  textBaseline: TextBaseline.alphabetic,
+                                  children: [
+                                    Text(
+                                      totalWeight > 0.0 ? totalWeight.toStringAsFixed(1) : '0.0',
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 26,
+                                        fontWeight: FontWeight.w800,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    const Text(
+                                      'kg',
+                                      style: TextStyle(color: Color(0xFF64748B), fontSize: 13),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      Container(
+                        height: 1,
+                        color: Colors.white.withValues(alpha: 0.08),
+                      ),
+                      const SizedBox(height: 14),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              const Icon(Icons.emoji_events_outlined, color: Color(0xFFF59E0B), size: 16),
+                              const SizedBox(width: 6),
+                              Text(
+                                'PB: ${maxWeight > 0.0 ? maxWeight.toStringAsFixed(1) : '0.0'} kg',
+                                style: const TextStyle(
+                                  color: Color(0xFFE2E8F0),
+                                  fontSize: 12.5,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                          Row(
+                            children: [
+                              const Icon(Icons.place_outlined, color: Color(0xFF38BDF8), size: 16),
+                              const SizedBox(width: 6),
+                              Text(
+                                '$visitedSpots Spot',
+                                style: const TextStyle(
+                                  color: Color(0xFFE2E8F0),
+                                  fontSize: 12.5,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
-              ),
-              const SizedBox(height: 18),
+                const SizedBox(height: 24),
 
-              // Translucent Stat Badges
-              Row(
-                children: [
-                  Expanded(
-                    child: _TranslucentSummaryCard(
-                      title: 'Total Strike',
-                      value: '${strikes.length} Ekor',
-                      icon: Icons.check_circle_outline,
-                      color: const Color(0xFF0284C7),
-                    ),
+                // C. Fitur & Alat Mancing
+                const Text(
+                  'Fitur & Alat',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.3,
+                    color: Color(0xFF0F172A),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _TranslucentSummaryCard(
-                      title: 'Ikan Terbesar (PB)',
-                      value: '${maxWeight.toStringAsFixed(1)} Kg',
-                      icon: Icons.emoji_events_outlined,
-                      color: const Color(0xFF0EA5E9),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
+                ),
+                const SizedBox(height: 12),
 
-              // Translucent Total Weight Bar
-              ClipRRect(
-                borderRadius: BorderRadius.circular(16),
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-                  child: Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.7),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.6),
+                GridView.count(
+                  crossAxisCount: 3,
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  mainAxisSpacing: 10,
+                  crossAxisSpacing: 10,
+                  childAspectRatio: 1.15,
+                  padding: const EdgeInsets.only(bottom: 12),
+                  children: [
+                    _FeatureToolTile(
+                      icon: Icons.vibration,
+                      label: 'Sensor Joran',
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const StrikeDetectorScreen()),
+                        );
+                      },
+                    ),
+                    _FeatureToolTile(
+                      icon: Icons.map_outlined,
+                      label: 'Peta Spot',
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => StrikeMapScreen(strikes: strikes)),
+                        );
+                      },
+                    ),
+                    _FeatureToolTile(
+                      icon: Icons.smart_toy_outlined,
+                      label: 'StrikeBot AI',
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const StrikeBotScreen()),
+                        );
+                      },
+                    ),
+                    _FeatureToolTile(
+                      icon: Icons.inventory_2_outlined,
+                      label: 'Kotak Alat',
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const TackleBoxScreen()),
+                        );
+                      },
+                    ),
+                    _FeatureToolTile(
+                      icon: Icons.sports_esports_outlined,
+                      label: 'Mini Game',
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const ReelTheFishGameScreen()),
+                        );
+                      },
+                    ),
+                    _FeatureToolTile(
+                      icon: Icons.currency_exchange,
+                      label: 'Kurs & Waktu',
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const CurrencyTimeConverterScreen()),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+                // const SizedBox(height: 22),
+
+                // D. Strike Terbaru
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Strike Terbaru',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF0F172A),
+                        fontSize: 16,
                       ),
+                    ),
+                    if (strikes.isNotEmpty)
+                      Text(
+                        '${strikes.length} Tangkapan',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: AppColors.textSecondary,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+
+                if (isLoading)
+                  const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(32.0),
+                      child: CircularProgressIndicator(),
+                    ),
+                  )
+                else if (strikes.isEmpty)
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 36),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: const Color(0xFFE2E8F0)),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF0284C7).withValues(alpha: 0.06),
-                          blurRadius: 10,
+                          color: const Color(0xFF009FE3).withValues(alpha: 0.04),
+                          blurRadius: 12,
                           offset: const Offset(0, 4),
                         ),
                       ],
                     ),
-                    child: Row(
+                    child: Column(
                       children: [
                         Container(
-                          padding: const EdgeInsets.all(8),
+                          width: 56,
+                          height: 56,
                           decoration: BoxDecoration(
-                            color: const Color(0xFF0284C7).withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(10),
+                            color: const Color(0xFFEAF7FC),
+                            shape: BoxShape.circle,
+                            border: Border.all(color: const Color(0xFFBAE6FD)),
                           ),
-                          child: const Icon(Icons.scale, color: Color(0xFF0284C7), size: 22),
+                          child: const Icon(Icons.phishing, size: 30, color: AppColors.primary),
                         ),
-                        const SizedBox(width: 12),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Akumulasi Tangkapan',
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: Colors.grey.shade600,
-                              ),
-                            ),
-                            Text(
-                              '${totalWeight.toStringAsFixed(1)} Kg',
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                                color: Color(0xFF0F172A),
-                              ),
-                            ),
-                          ],
+                        const SizedBox(height: 14),
+                        const Text(
+                          'Belum ada strike tercatat',
+                          style: TextStyle(
+                            color: Color(0xFF0F172A),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        const Text(
+                          'Tekan tombol + di bawah untuk mencatat hasil tangkapan pertamamu!',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: Color(0xFF64748B), fontSize: 13),
                         ),
                       ],
                     ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 22),
-
-              // Angler Tool Hub (Fitur Utama Cepat)
-              Text(
-                'Fitur & Alat Mancing',
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: const Color(0xFF0F172A),
-                ),
-              ),
-              const SizedBox(height: 12),
-
-              LayoutBuilder(
-                builder: (context, constraints) {
-                  return GridView.count(
-                    crossAxisCount: 3,
+                  )
+                else
+                  ListView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    mainAxisSpacing: 14,
-                    crossAxisSpacing: 12,
-                    childAspectRatio: 1.05,
-                    children: [
-                      _QuickActionTile(
-                        icon: Icons.vibration,
-                        label: 'Sensor Joran',
-                        gradientColors: const [Color(0xFF38BDF8), Color(0xFF0284C7)],
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => const StrikeDetectorScreen()),
-                          );
-                        },
-                      ),
-                      _QuickActionTile(
-                        icon: Icons.map_outlined,
-                        label: 'Peta Spot',
-                        gradientColors: const [Color(0xFF2DD4BF), Color(0xFF0D9488)],
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => StrikeMapScreen(strikes: strikes)),
-                          );
-                        },
-                      ),
-                      _QuickActionTile(
-                        icon: Icons.smart_toy_outlined,
-                        label: 'StrikeBot AI',
-                        gradientColors: const [Color(0xFFA78BFA), Color(0xFF7C3AED)],
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => const StrikeBotScreen()),
-                          );
-                        },
-                      ),
-                      _QuickActionTile(
-                        icon: Icons.inventory_2_outlined,
-                        label: 'Kotak Alat',
-                        gradientColors: const [Color(0xFFF97316), Color(0xFFC2410C)],
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => const TackleBoxScreen()),
-                          );
-                        },
-                      ),
-                      _QuickActionTile(
-                        icon: Icons.sports_esports_outlined,
-                        label: 'Mini Game',
-                        gradientColors: const [Color(0xFFF472B6), Color(0xFFDB2777)],
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => const ReelTheFishGameScreen()),
-                          );
-                        },
-                      ),
-                      _QuickActionTile(
-                        icon: Icons.currency_exchange,
-                        label: 'Kurs & Waktu',
-                        gradientColors: const [Color(0xFF60A5FA), Color(0xFF2563EB)],
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => const CurrencyTimeConverterScreen()),
-                          );
-                        },
-                      ),
-                    ],
-                  );
-                },
-              ),
-              const SizedBox(height: 20),
-
-              Text(
-                'Strike Terbaru',
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: const Color(0xFF0F172A),
-                ),
-              ),
-              const SizedBox(height: 12),
-
-              if (isLoading)
-                const Center(
-                  child: Padding(
-                    padding: EdgeInsets.all(32.0),
-                    child: CircularProgressIndicator(),
+                    itemCount: strikes.take(5).length,
+                    itemBuilder: (context, index) {
+                      final item = strikes[index];
+                      return StrikeCardTile(item: item);
+                    },
                   ),
-                )
-              else if (strikes.isEmpty)
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(18),
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-                    child: Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(32),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.65),
-                        borderRadius: BorderRadius.circular(18),
-                        border: Border.all(color: Colors.white.withValues(alpha: 0.7)),
-                      ),
-                      child: Column(
-                        children: [
-                          Icon(Icons.phishing, size: 48, color: Colors.blue.shade200),
-                          const SizedBox(height: 10),
-                          const Text(
-                            'Belum ada strike tercatat',
-                            style: TextStyle(
-                              color: Color(0xFF334155),
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Klik tombol + di bawah untuk mencatat strike pertamamu!',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                )
-              else
-                ListView.separated(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: strikes.take(5).length,
-                  separatorBuilder: (_, _) => const SizedBox(height: 10),
-                  itemBuilder: (context, index) {
-                    final item = strikes[index];
-                    return StrikeCardTile(item: item);
-                  },
-                ),
-              const SizedBox(height: 120), // Extra bottom padding for floating navbar
-            ],
+
+                const SizedBox(height: 110), // Padding to prevent bottom nav overlap
+              ],
+            ),
           ),
         ),
       ),
@@ -591,125 +692,45 @@ class _HomeScreen extends StatelessWidget {
   }
 }
 
-class _QuickActionTile extends StatelessWidget {
+class _FeatureToolTile extends StatelessWidget {
   final IconData icon;
   final String label;
-  final List<Color> gradientColors;
   final VoidCallback onTap;
 
-  const _QuickActionTile({
+  const _FeatureToolTile({
     required this.icon,
     required this.label,
-    required this.gradientColors,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
+    return Material(
+      color: Colors.white,
       borderRadius: BorderRadius.circular(16),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: gradientColors,
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(15),
-              boxShadow: [
-                BoxShadow(
-                  color: gradientColors.last.withValues(alpha: 0.28),
-                  blurRadius: 8,
-                  offset: const Offset(0, 3),
-                ),
-              ],
-            ),
-            child: Icon(icon, color: Colors.white, size: 24),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFF1E293B),
-            ),
-            textAlign: TextAlign.center,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _TranslucentSummaryCard extends StatelessWidget {
-  final String title;
-  final String value;
-  final IconData icon;
-  final Color color;
-
-  const _TranslucentSummaryCard({
-    required this.title,
-    required this.value,
-    required this.icon,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(18),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
         child: Container(
-          padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.75),
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.8),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: color.withValues(alpha: 0.08),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
           ),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(icon, color: color, size: 20),
-              ),
-              const SizedBox(height: 10),
+              Icon(icon, color: const Color(0xFF0F172A), size: 22),
+              const SizedBox(height: 6),
               Text(
-                title,
-                style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                value,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: color,
+                label,
+                style: const TextStyle(
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF0F172A),
                 ),
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ],
           ),
@@ -723,12 +744,14 @@ class _LogsScreen extends StatefulWidget {
   final List<StrikeModel> strikes;
   final bool isLoading;
   final Future<void> Function() onRefresh;
+  final VoidCallback? onAddTap;
   final Function(String) onDelete;
 
   const _LogsScreen({
     required this.strikes,
     required this.isLoading,
     required this.onRefresh,
+    this.onAddTap,
     required this.onDelete,
   });
 
@@ -746,10 +769,33 @@ class _LogsScreenState extends State<_LogsScreen> {
     super.dispose();
   }
 
+  bool _isUnidentified(String name) {
+    final lower = name.trim().toLowerCase();
+    return lower.isEmpty ||
+        lower == 'ikan misterius' ||
+        lower == 'unknown catch' ||
+        lower == 'unidentified';
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Unique fish names for filter chips
-    final fishNames = ['Semua', ...widget.strikes.map((s) => s.fishName).toSet()];
+    // Kategori Filter Statis & Relevan
+    final staticFilters = [
+      'Semua',
+      'Ikan belum teridentifikasi',
+      'Ikan teridentifikasi',
+      'Relevan',
+      'Tidak relevan',
+    ];
+
+    // Filter dinamis dari nama ikan yang ada di data
+    final dynamicFish = widget.strikes
+        .map((s) => s.fishName.trim())
+        .where((name) => !_isUnidentified(name))
+        .toSet()
+        .toList();
+
+    final allFilterChips = [...staticFilters, ...dynamicFish];
 
     // Search and filter logic
     final query = _searchController.text.toLowerCase().trim();
@@ -760,142 +806,312 @@ class _LogsScreenState extends State<_LogsScreen> {
           (s.lureName?.toLowerCase().contains(query) ?? false) ||
           (s.notes?.toLowerCase().contains(query) ?? false);
 
-      final matchesFilter = _selectedFilter == 'Semua' || s.fishName == _selectedFilter;
+      if (!matchesSearch) return false;
 
-      return matchesSearch && matchesFilter;
+      // Filter category check
+      if (_selectedFilter == 'Semua') {
+        return true;
+      } else if (_selectedFilter == 'Ikan belum teridentifikasi') {
+        return _isUnidentified(s.fishName);
+      } else if (_selectedFilter == 'Ikan teridentifikasi') {
+        return !_isUnidentified(s.fishName);
+      } else if (_selectedFilter == 'Relevan') {
+        // Tangkapan yang memiliki data lengkap (berat > 0, spot valid, atau ada foto/blockchain)
+        return s.weightKg > 0.0 &&
+            s.spotName.trim().isNotEmpty &&
+            s.spotName.toLowerCase() != 'spot rahasia';
+      } else if (_selectedFilter == 'Tidak relevan') {
+        // Tangkapan yang belum ada berat atau spot belum diset
+        return s.weightKg <= 0.0 ||
+            s.spotName.trim().isEmpty ||
+            s.spotName.toLowerCase() == 'spot rahasia';
+      } else {
+        // Filter nama spesies spesifik
+        return s.fishName.trim().toLowerCase() == _selectedFilter.toLowerCase();
+      }
     }).toList();
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF0F9FF),
-      appBar: AppBar(
-        title: const Text('Daftar Strike & Riwayat', style: TextStyle(fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        centerTitle: true,
-        actions: [
-          IconButton(
-            tooltip: 'Lihat di Peta',
-            icon: const Icon(Icons.map_outlined, color: Color(0xFF0284C7)),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => StrikeMapScreen(strikes: widget.strikes),
-                ),
-              );
-            },
-          ),
-        ],
-      ),
-      body: RefreshIndicator(
-        onRefresh: widget.onRefresh,
-        child: Column(
-          children: [
-            // Search Input Bar
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-              child: TextField(
-                controller: _searchController,
-                onChanged: (_) => setState(() {}),
-                decoration: InputDecoration(
-                  hintText: 'Cari ikan, spot, atau umpan...',
-                  prefixIcon: const Icon(Icons.search, color: Color(0xFF0284C7)),
-                  suffixIcon: _searchController.text.isNotEmpty
-                      ? IconButton(
-                          icon: const Icon(Icons.clear, size: 18),
-                          onPressed: () {
-                            _searchController.clear();
-                            setState(() {});
-                          },
-                        )
-                      : null,
-                  filled: true,
-                  fillColor: Colors.white,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide(color: Colors.blue.shade100),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide(color: Colors.blue.shade100),
-                  ),
-                ),
-              ),
-            ),
-
-            // Filter Chips Horizontal Scroll
-            if (fishNames.length > 2)
-              SizedBox(
-                height: 38,
-                child: ListView.separated(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  scrollDirection: Axis.horizontal,
-                  itemCount: fishNames.length,
-                  separatorBuilder: (_, _) => const SizedBox(width: 8),
-                  itemBuilder: (context, index) {
-                    final name = fishNames[index];
-                    final isSelected = _selectedFilter == name;
-                    return ChoiceChip(
-                      label: Text(name, style: TextStyle(fontSize: 12, color: isSelected ? Colors.white : const Color(0xFF0F172A))),
-                      selected: isSelected,
-                      selectedColor: const Color(0xFF0284C7),
-                      backgroundColor: Colors.white,
-                      side: BorderSide(color: isSelected ? const Color(0xFF0284C7) : Colors.grey.shade300),
-                      onSelected: (selected) {
-                        if (selected) setState(() => _selectedFilter = name);
-                      },
-                    );
-                  },
-                ),
-              ),
-            const SizedBox(height: 8),
-
-            // Content List
-            Expanded(
-              child: widget.isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : filteredStrikes.isEmpty
-                      ? ListView(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(top: 80),
-                              child: Column(
-                                children: [
-                                  Icon(Icons.phishing, size: 64, color: Colors.grey.shade400),
-                                  const SizedBox(height: 12),
-                                  Text(
-                                    widget.strikes.isEmpty
-                                        ? 'Belum Ada Catatan Strike'
-                                        : 'Tidak Ada Hasil yang Cocok',
-                                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                                  ),
-                                  const SizedBox(height: 6),
-                                  Text(
-                                    widget.strikes.isEmpty
-                                        ? 'Gunakan tombol + untuk menambahkan'
-                                        : 'Coba ubah kata kunci pencarian atau filter',
-                                    style: TextStyle(color: Colors.grey.shade500),
-                                  ),
-                                ],
-                              ),
+      backgroundColor: const Color(0xFFEAF7FC),
+      body: SafeArea(
+        bottom: false,
+        child: RefreshIndicator(
+          color: AppColors.primary,
+          onRefresh: widget.onRefresh,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 1. Header Compact (Judul, Subtitle, & Tombol Peta Spot)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(18, 12, 14, 8),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: const [
+                          Text(
+                            'Daftar Strike & Riwayat',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF172B43),
+                              letterSpacing: -0.2,
                             ),
-                          ],
-                        )
-                      : ListView.separated(
-                          padding: const EdgeInsets.fromLTRB(16, 8, 16, 120),
-                          itemCount: filteredStrikes.length,
-                          separatorBuilder: (_, _) => const SizedBox(height: 10),
-                          itemBuilder: (context, index) {
-                            final item = filteredStrikes[index];
-                            return StrikeCardTile(
-                              item: item,
-                              onDelete: () => widget.onDelete(item.id),
-                            );
-                          },
+                          ),
+                          SizedBox(height: 2),
+                          Text(
+                            'Dokumentasi hasil memancingmu',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Color(0xFF64788D),
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    // Action button: Peta Spot
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: const Color(0xFFDCEEF5)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF009FE3).withValues(alpha: 0.06),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: IconButton(
+                        tooltip: 'Lihat di Peta',
+                        icon: const Icon(Icons.map_outlined, color: AppColors.primary, size: 22),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => StrikeMapScreen(strikes: widget.strikes),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // 2. Search Bar
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 6),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: const Color(0xFFDCEEF5), width: 1.2),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF009FE3).withValues(alpha: 0.04),
+                        blurRadius: 10,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: TextField(
+                    controller: _searchController,
+                    onChanged: (_) => setState(() {}),
+                    style: const TextStyle(fontSize: 14, color: Color(0xFF172B43)),
+                    decoration: InputDecoration(
+                      hintText: 'Cari ikan, spot, atau umpan...',
+                      hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13.5),
+                      prefixIcon: const Icon(Icons.search_rounded, color: AppColors.primary, size: 22),
+                      suffixIcon: _searchController.text.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(Icons.clear_rounded, size: 18, color: Color(0xFF64788D)),
+                              onPressed: () {
+                                _searchController.clear();
+                                setState(() {});
+                              },
+                            )
+                          : null,
+                      filled: true,
+                      fillColor: Colors.white,
+                      isDense: true,
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(20),
+                        borderSide: BorderSide.none,
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(20),
+                        borderSide: BorderSide.none,
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(20),
+                        borderSide: const BorderSide(color: AppColors.primary, width: 1.4),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+
+              // 3. Filter Chips (Horizontal Scrollable)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: SizedBox(
+                  height: 38,
+                  child: ListView.separated(
+                    padding: const EdgeInsets.symmetric(horizontal: 18),
+                    scrollDirection: Axis.horizontal,
+                    itemCount: allFilterChips.length,
+                    separatorBuilder: (_, _) => const SizedBox(width: 8),
+                    itemBuilder: (context, index) {
+                      final name = allFilterChips[index];
+                      final isSelected = _selectedFilter == name;
+                      return ChoiceChip(
+                        showCheckmark: false,
+                        label: Text(
+                          name,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                            color: isSelected ? Colors.white : const Color(0xFF172B43),
+                          ),
                         ),
-            ),
-          ],
+                        selected: isSelected,
+                        selectedColor: AppColors.primary,
+                        backgroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                          side: BorderSide(
+                            color: isSelected ? AppColors.primary : const Color(0xFFDCEEF5),
+                            width: 1.2,
+                          ),
+                        ),
+                        onSelected: (selected) {
+                          if (selected) setState(() => _selectedFilter = name);
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ),
+
+              // 4. Daftar Strike / Empty State
+              Expanded(
+                child: widget.isLoading
+                    ? const Center(
+                        child: CircularProgressIndicator(color: AppColors.primary),
+                      )
+                    : filteredStrikes.isEmpty
+                        ? ListView(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.fromLTRB(28, 50, 28, 120),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 36),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(24),
+                                    border: Border.all(color: const Color(0xFFDCEEF5)),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: const Color(0xFF009FE3).withValues(alpha: 0.05),
+                                        blurRadius: 14,
+                                        offset: const Offset(0, 4),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Container(
+                                        width: 64,
+                                        height: 64,
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFFEAF7FC),
+                                          shape: BoxShape.circle,
+                                          border: Border.all(color: const Color(0xFFBAE6FD)),
+                                        ),
+                                        child: const Icon(
+                                          Icons.phishing_rounded,
+                                          size: 34,
+                                          color: AppColors.primary,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 16),
+                                      Text(
+                                        widget.strikes.isEmpty
+                                            ? 'Belum ada strike tercatat'
+                                            : 'Tidak ada hasil yang cocok',
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: Color(0xFF172B43),
+                                        ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                      const SizedBox(height: 6),
+                                      Text(
+                                        widget.strikes.isEmpty
+                                            ? 'Mulai dokumentasikan pengalaman memancingmu.'
+                                            : 'Coba ubah kata kunci pencarian atau ganti filter kategori.',
+                                        textAlign: TextAlign.center,
+                                        style: const TextStyle(
+                                          color: Color(0xFF64788D),
+                                          fontSize: 13,
+                                          height: 1.35,
+                                        ),
+                                      ),
+                                      if (widget.strikes.isEmpty && widget.onAddTap != null) ...[
+                                        const SizedBox(height: 20),
+                                        ElevatedButton.icon(
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: AppColors.primary,
+                                            foregroundColor: Colors.white,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(16),
+                                            ),
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 20,
+                                              vertical: 12,
+                                            ),
+                                            elevation: 0,
+                                          ),
+                                          onPressed: widget.onAddTap,
+                                          icon: const Icon(Icons.add_rounded, size: 20),
+                                          label: const Text(
+                                            'Tambah Log Pertama',
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          )
+                        : ListView.builder(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            padding: const EdgeInsets.fromLTRB(18, 4, 18, 120),
+                            itemCount: filteredStrikes.length,
+                            itemBuilder: (context, index) {
+                              final item = filteredStrikes[index];
+                              return StrikeCardTile(
+                                item: item,
+                                onDelete: () => widget.onDelete(item.id),
+                              );
+                            },
+                          ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -908,7 +1124,7 @@ class _StatisticsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const primaryColor = Color(0xFF0284C7);
+    const primaryColor = AppColors.primary;
 
     // Hitung spot frekuensi
     final spotCounts = <String, int>{};
@@ -953,7 +1169,7 @@ class _StatisticsScreen extends StatelessWidget {
     final dayNames = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF0F9FF),
+      backgroundColor: const Color(0xFFEAF7FC),
       appBar: AppBar(
         title: const Text('Statistik Mancing', style: TextStyle(fontWeight: FontWeight.bold)),
         centerTitle: true,
@@ -1373,7 +1589,7 @@ class _ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const primaryColor = Color(0xFF0284C7);
+    const primaryColor = AppColors.primary;
     final totalWeight = strikes.fold<double>(0.0, (sum, item) => sum + item.weightKg);
     final uniqueFish = strikes.map((e) => e.fishName.toLowerCase().trim()).toSet().length;
 
@@ -1393,7 +1609,7 @@ class _ProfileScreen extends StatelessWidget {
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF0F9FF),
+      backgroundColor: const Color(0xFFEAF7FC),
       appBar: AppBar(
         title: const Text(
           'Profil Pemancing',

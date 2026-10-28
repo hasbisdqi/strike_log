@@ -54,7 +54,11 @@ class _StrikeBotScreenState extends State<StrikeBotScreen> {
     });
     _scrollToBottom();
 
-    final botReply = await StrikeBotService.getBotResponse(text);
+    final historyToSend = List<ChatMessage>.from(_messages.sublist(1, _messages.length - 1));
+    final botReply = await StrikeBotService.getBotResponse(
+      text,
+      conversationHistory: historyToSend,
+    );
 
     if (mounted) {
       setState(() {

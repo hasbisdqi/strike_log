@@ -12,7 +12,7 @@ Future<void> main() async {
 
   await Supabase.initialize(
     url: SupabaseConfig.supabaseUrl,
-    anonKey: SupabaseConfig.supabaseAnonKey,
+    publishableKey: SupabaseConfig.supabasePublishableKey,
   );
 
   // Inisialisasi Database Lokal Hive
