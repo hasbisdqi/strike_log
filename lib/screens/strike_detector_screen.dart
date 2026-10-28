@@ -238,12 +238,12 @@ class _StrikeDetectorScreenState extends State<StrikeDetectorScreen> {
                   ),
                   const SizedBox(height: AppSpacing.xl),
 
-                  // Visual Compass Needle
+                  // Visual Compass Dial & Needle
                   Transform.rotate(
                     angle: ((headingDeg) * (pi / 180) * -1),
                     child: Container(
-                      width: 130,
-                      height: 130,
+                      width: 140,
+                      height: 140,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         border: Border.all(color: AppColors.tealAccent.withValues(alpha: 0.4), width: 3),
@@ -257,23 +257,74 @@ class _StrikeDetectorScreenState extends State<StrikeDetectorScreen> {
                       child: Stack(
                         alignment: Alignment.center,
                         children: [
+                          // Utara (N)
                           const Positioned(
                             top: 8,
                             child: Text(
                               'U',
-                              style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.error),
+                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.error),
                             ),
                           ),
+                          // Selatan (S)
                           const Positioned(
                             bottom: 8,
-                            child: Text('S', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
+                            child: Text(
+                              'S',
+                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF64748B)),
+                            ),
                           ),
+                          // Timur (E)
+                          const Positioned(
+                            right: 8,
+                            child: Text(
+                              'T',
+                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF64748B)),
+                            ),
+                          ),
+                          // Barat (W)
+                          const Positioned(
+                            left: 8,
+                            child: Text(
+                              'B',
+                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF64748B)),
+                            ),
+                          ),
+                          // Needle (North: Merah, South: Teal/Abu)
+                          Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                width: 5,
+                                height: 35,
+                                decoration: BoxDecoration(
+                                  color: AppColors.error,
+                                  borderRadius: const BorderRadius.vertical(top: Radius.circular(3)),
+                                ),
+                              ),
+                              Container(
+                                width: 5,
+                                height: 35,
+                                decoration: BoxDecoration(
+                                  color: AppColors.tealAccent,
+                                  borderRadius: const BorderRadius.vertical(bottom: Radius.circular(3)),
+                                ),
+                              ),
+                            ],
+                          ),
+                          // Center Pivot
                           Container(
-                            width: 6,
-                            height: 60,
+                            width: 12,
+                            height: 12,
                             decoration: BoxDecoration(
-                              color: AppColors.tealAccent,
-                              borderRadius: BorderRadius.circular(3),
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                              border: Border.all(color: AppColors.tealAccent, width: 2.5),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.2),
+                                  blurRadius: 4,
+                                ),
+                              ],
                             ),
                           ),
                         ],
