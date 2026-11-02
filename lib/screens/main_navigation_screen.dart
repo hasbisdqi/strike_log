@@ -782,10 +782,10 @@ class _LogsScreenState extends State<_LogsScreen> {
     // Kategori Filter Statis & Relevan
     final staticFilters = [
       'Semua',
-      'Ikan belum teridentifikasi',
-      'Ikan teridentifikasi',
-      'Relevan',
-      'Tidak relevan',
+      'Belum Teridentifikasi',
+      'Teridentifikasi',
+      'Data Lengkap',
+      'Belum Lengkap',
     ];
 
     // Filter dinamis dari nama ikan yang ada di data
@@ -811,16 +811,16 @@ class _LogsScreenState extends State<_LogsScreen> {
       // Filter category check
       if (_selectedFilter == 'Semua') {
         return true;
-      } else if (_selectedFilter == 'Ikan belum teridentifikasi') {
+      } else if (_selectedFilter == 'Belum Teridentifikasi') {
         return _isUnidentified(s.fishName);
-      } else if (_selectedFilter == 'Ikan teridentifikasi') {
+      } else if (_selectedFilter == 'Teridentifikasi') {
         return !_isUnidentified(s.fishName);
-      } else if (_selectedFilter == 'Relevan') {
+      } else if (_selectedFilter == 'Data Lengkap') {
         // Tangkapan yang memiliki data lengkap (berat > 0, spot valid, atau ada foto/blockchain)
         return s.weightKg > 0.0 &&
             s.spotName.trim().isNotEmpty &&
             s.spotName.toLowerCase() != 'spot rahasia';
-      } else if (_selectedFilter == 'Tidak relevan') {
+      } else if (_selectedFilter == 'Belum Lengkap') {
         // Tangkapan yang belum ada berat atau spot belum diset
         return s.weightKg <= 0.0 ||
             s.spotName.trim().isEmpty ||
@@ -1788,7 +1788,7 @@ class _ProfileScreen extends StatelessWidget {
                       _ProfileMenuItem(
                         icon: Icons.rate_review_outlined,
                         title: 'Saran & Kesan Kuliah PAM',
-                        subtitle: 'Ulasan praktikum pemrograman mobile',
+                        subtitle: 'Ulasan pemrograman aplikasi mobile',
                         onTap: () {
                           Navigator.push(
                             context,

@@ -148,13 +148,9 @@ class _StrikeBotScreenState extends State<StrikeBotScreen> {
                         ),
                       ],
                     ),
-                    child: Text(
+                    child: _buildFormattedText(
                       msg.text,
-                      style: TextStyle(
-                        color: msg.isUser ? Colors.white : AppColors.textPrimary,
-                        fontSize: 14,
-                        height: 1.4,
-                      ),
+                      baseColor: msg.isUser ? Colors.white : AppColors.textPrimary,
                     ),
                   ),
                 );
@@ -228,6 +224,78 @@ class _StrikeBotScreenState extends State<StrikeBotScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  /// Parser inline markdown ringan: render ***teks***, **teks** (bold), *teks* (italic), dan teks biasa
+  Widget _buildFormattedText(String text, {required Color baseColor}) {
+    final spans = <TextSpan>[];
+    // Regex matches ***...***, **...**, or *...*
+    final regex = RegExp(r'(\*\*\*[^*]+\*\*\*|\*\*[^*]+\*\*|\*[^*]+\*)');
+    int lastIndex = 0;
+
+    for (final match in regex.allMatches(text)) {
+      if (match.start > lastIndex) {
+        spans.add(TextSpan(
+          text: text.substring(lastIndex, match.start),
+          style: TextStyle(
+            color: baseColor,
+            fontSize: 14,
+            height: 1.4,
+          ),
+        ));
+      }
+
+      final matchedText = match.group(0)!;
+      if (matchedText.startsWith('***') && matchedText.endsWith('***') && matchedText.length >= 6) {
+        spans.add(TextSpan(
+          text: matchedText.substring(3, matchedText.length - 3),
+          style: TextStyle(
+            color: baseColor,
+            fontWeight: FontWeight.bold,
+            fontStyle: FontStyle.italic,
+            fontSize: 14,
+            height: 1.4,
+          ),
+        ));
+      } else if (matchedText.startsWith('**') && matchedText.endsWith('**') && matchedText.length >= 4) {
+        spans.add(TextSpan(
+          text: matchedText.substring(2, matchedText.length - 2),
+          style: TextStyle(
+            color: baseColor,
+            fontWeight: FontWeight.bold,
+            fontSize: 14,
+            height: 1.4,
+          ),
+        ));
+      } else if (matchedText.startsWith('*') && matchedText.endsWith('*') && matchedText.length >= 2) {
+        spans.add(TextSpan(
+          text: matchedText.substring(1, matchedText.length - 1),
+          style: TextStyle(
+            color: baseColor,
+            fontStyle: FontStyle.italic,
+            fontSize: 14,
+            height: 1.4,
+          ),
+        ));
+      }
+
+      lastIndex = match.end;
+    }
+
+    if (lastIndex < text.length) {
+      spans.add(TextSpan(
+        text: text.substring(lastIndex),
+        style: TextStyle(
+          color: baseColor,
+          fontSize: 14,
+          height: 1.4,
+        ),
+      ));
+    }
+
+    return Text.rich(
+      TextSpan(children: spans),
     );
   }
 }

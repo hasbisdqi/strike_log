@@ -293,7 +293,7 @@ class _AddStrikeScreenState extends State<AddStrikeScreen> {
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Strike & Blockchain Stamp berhasil dicatat! 🎣⛓️')),
+        const SnackBar(content: Text('Tangkapan berhasil dicatat! 🎣')),
       );
       Navigator.pop(context, true);
     } catch (e) {
@@ -371,7 +371,7 @@ class _AddStrikeScreenState extends State<AddStrikeScreen> {
                                       const CircularProgressIndicator(color: Colors.white),
                                       const SizedBox(height: 12),
                                       Text(
-                                        _isLocating ? 'Mendeteksi GPS LBS Spot...' : 'AI Vision Memindai Ikan...',
+                                        _isLocating ? 'Mendeteksi Spot GPS...' : 'Memindai Foto Ikan...',
                                         style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                                       ),
                                     ],
@@ -475,7 +475,7 @@ class _AddStrikeScreenState extends State<AddStrikeScreen> {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              'Auto-scan AI, deteksi lokasi GPS & stamp Blockchain',
+                              'Deteksi ikan otomatis & lokasi GPS spot',
                               style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
                             ),
                             const SizedBox(height: 8),
@@ -505,7 +505,7 @@ class _AddStrikeScreenState extends State<AddStrikeScreen> {
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          'AI Vision berhasil mendeteksi ikan & GPS spot!',
+                          'Ikan & lokasi spot berhasil terdeteksi!',
                           style: TextStyle(color: Colors.teal.shade800, fontSize: 12, fontWeight: FontWeight.w600),
                         ),
                       ),
@@ -583,7 +583,7 @@ class _AddStrikeScreenState extends State<AddStrikeScreen> {
                     TextFormField(
                       controller: _spotNameController,
                       decoration: InputDecoration(
-                        labelText: 'Nama Spot Mancing *',
+                        labelText: 'Lokasi Spot Mancing *',
                         hintText: 'Misal: Waduk Jatiluhur, Muara Angke',
                         prefixIcon: const Icon(Icons.place_outlined),
                         suffixIcon: Row(
@@ -644,7 +644,7 @@ class _AddStrikeScreenState extends State<AddStrikeScreen> {
                       )
                     : const Icon(Icons.check_circle_outline),
                 label: Text(
-                  _isLoading ? 'Menyimpan & Menerbitkan Hash...' : 'Simpan Strike Log (PoC)',
+                  _isLoading ? 'Menyimpan tangkapan...' : 'Simpan Tangkapan',
                   style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
               ),

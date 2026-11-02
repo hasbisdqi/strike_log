@@ -138,7 +138,7 @@ class StrikeCardTile extends StatelessWidget {
         rawName.toLowerCase() == 'ikan misterius' ||
         rawName.toLowerCase() == 'unknown catch' ||
         rawName.toLowerCase() == 'unidentified';
-    final displayName = isUnidentified ? 'Ikan belum teridentifikasi' : rawName;
+    final displayName = isUnidentified ? 'Belum teridentifikasi' : rawName;
 
     // Berat valid
     final bool hasValidWeight = item.weightKg > 0.0;

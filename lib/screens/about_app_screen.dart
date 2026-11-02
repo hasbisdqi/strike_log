@@ -74,7 +74,7 @@ class AboutAppScreen extends StatelessWidget {
                   _buildSpecRow('Backend', 'Supabase PostgreSQL & Storage'),
                   _buildSpecRow('Local Database', 'Hive Flutter Box'),
                   _buildSpecRow('Keamanan', 'Biometric & SHA-256 Hash'),
-                  _buildSpecRow('Mata Kuliah', 'Praktikum Pemrograman Aplikasi Mobile'),
+                  _buildSpecRow('Mata Kuliah', 'Pemrograman Aplikasi Mobile'),
                 ],
               ),
             ),

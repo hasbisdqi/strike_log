@@ -351,7 +351,7 @@ class StrikeDetailScreen extends StatelessWidget {
                       icon: Icons.tag,
                       iconColor: Colors.purple,
                       title: 'Transaction Proof Hash (TxHash)',
-                      value: '${item.blockchainHash!.substring(0, item.blockchainHash!.length > 18 ? 18 : item.blockchainHash!.length)}...',
+                      value: item.blockchainHash ?? '-',
                     ),
                     const SizedBox(height: 12),
                     ElevatedButton.icon(

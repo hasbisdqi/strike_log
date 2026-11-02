@@ -555,7 +555,7 @@ class _TackleBoxScreenState extends State<TackleBoxScreen> {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: Text(
-          widget.selectMode ? 'Pilih Alat Mancing' : 'Kotak Alat (Tackle Box)',
+          widget.selectMode ? 'Pilih Alat Mancing' : 'Kotak Alat Pancing',
           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
         ),
         centerTitle: true,

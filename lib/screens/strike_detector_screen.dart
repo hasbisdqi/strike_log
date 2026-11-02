@@ -73,14 +73,14 @@ class _StrikeDetectorScreenState extends State<StrikeDetectorScreen> {
             SizedBox(width: AppSpacing.sm),
             Expanded(
               child: Text(
-                'STRIKE TERDETEKSI! 🎣',
+                'IKAN MENYAMBAR! 🎣',
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
               ),
             ),
           ],
         ),
         content: Text(
-          'Sentakan joran terdeteksi dengan kekuatan ${force.toStringAsFixed(1)} m/s²!\nSegera gulung senar pancinganmu!',
+          'Tarikan joran terdeteksi dengan kekuatan ${force.toStringAsFixed(1)} m/s²!\nSegera tarik senarmu!',
           style: const TextStyle(height: 1.4),
         ),
         actions: [
@@ -92,7 +92,7 @@ class _StrikeDetectorScreenState extends State<StrikeDetectorScreen> {
                 if (mounted) setState(() => _isStrikeTriggered = false);
               });
             },
-            child: const Text('Siap Gulung!'),
+            child: const Text('Tarik Senar!'),
           ),
         ],
       ),
@@ -209,7 +209,7 @@ class _StrikeDetectorScreenState extends State<StrikeDetectorScreen> {
                   const SizedBox(height: AppSpacing.lg),
 
                   Text(
-                    forceRatio > 0.8 ? 'SENTAKAN KUAT!' : 'Pasang HP di joran untuk mendeteksi strike',
+                    forceRatio > 0.8 ? 'TARIKAN KUAT!' : 'Pasang HP di joran untuk deteksi sambaran',
                     style: TextStyle(
                       color: forceRatio > 0.8 ? AppColors.error : AppColors.textSecondary,
                       fontWeight: FontWeight.w600,
@@ -218,7 +218,7 @@ class _StrikeDetectorScreenState extends State<StrikeDetectorScreen> {
                   ),
                   const SizedBox(height: AppSpacing.xs),
                   Text(
-                    'Puncak Tarikan: ${_maxForce.toStringAsFixed(1)} m/s²',
+                    'Tarikan Terkuat: ${_maxForce.toStringAsFixed(1)} m/s²',
                     style: const TextStyle(color: AppColors.textMuted, fontSize: 11),
                   ),
                 ],
