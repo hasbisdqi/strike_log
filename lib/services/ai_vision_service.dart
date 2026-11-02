@@ -5,6 +5,7 @@ import '../core/app_config.dart';
 import '../core/supabase_config.dart';
 
 class AiFishScanResult {
+  final bool isFishDetected;
   final String fishName;
   final double estimatedWeightKg;
   final String recommendedLure;
@@ -12,6 +13,7 @@ class AiFishScanResult {
   final double confidence;
 
   AiFishScanResult({
+    required this.isFishDetected,
     required this.fishName,
     required this.estimatedWeightKg,
     required this.recommendedLure,
@@ -40,6 +42,29 @@ class AiVisionService {
       if (response.status == 200 && data != null && data is Map) {
         if (data['success'] == true && data['data'] != null) {
           final parsed = data['data'] as Map;
+          final bool rawIsFish = parsed['is_fish'] == true;
+          final String rawFishName = parsed['fish_name']?.toString().trim() ?? '';
+          final String lowerFishName = rawFishName.toLowerCase();
+
+          final bool isNegativeName = lowerFishName.contains('bukan ikan') ||
+              lowerFishName.contains('tidak teridentifikasi') ||
+              lowerFishName.contains('tidak ada ikan') ||
+              lowerFishName.contains('unidentified') ||
+              lowerFishName == 'unknown';
+
+          final bool isFish = rawIsFish && rawFishName.isNotEmpty && !isNegativeName;
+
+          if (!isFish) {
+            return AiFishScanResult(
+              isFishDetected: false,
+              fishName: '',
+              estimatedWeightKg: 0.0,
+              recommendedLure: '',
+              description: parsed['description']?.toString() ?? 'Tidak ada ikan terdeteksi pada gambar.',
+              confidence: 0.0,
+            );
+          }
+
           final rawWeight = parsed['estimated_weight'];
           double weight = 1.2;
           if (rawWeight is num) {
@@ -49,6 +74,7 @@ class AiVisionService {
           }
 
           return AiFishScanResult(
+            isFishDetected: true,
             fishName: parsed['fish_name']?.toString() ?? 'Ikan Tangkapan Unik',
             estimatedWeightKg: weight <= 0.0 ? 0.8 : double.parse(weight.toStringAsFixed(1)),
             recommendedLure: parsed['recommended_lure']?.toString() ?? 'Umpan Lure / Udang Hidup',
@@ -59,7 +85,7 @@ class AiVisionService {
       }
     } catch (_) {}
 
-    // Dynamic heuristic fallback jika tidak ada internet / quota limit
+    // Fallback jika tidak ada internet / edge function gagal
     await Future.delayed(const Duration(milliseconds: 1000));
     final random = Random(DateTime.now().microsecondsSinceEpoch);
 
@@ -107,6 +133,7 @@ class AiVisionService {
     final finalWeight = double.parse(((picked['weight'] as double) + weightJitter).toStringAsFixed(1));
 
     return AiFishScanResult(
+      isFishDetected: true,
       fishName: picked['name'] as String,
       estimatedWeightKg: finalWeight < 0.3 ? 0.8 : finalWeight,
       recommendedLure: picked['lure'] as String,

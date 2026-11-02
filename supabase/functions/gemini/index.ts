@@ -121,10 +121,13 @@ Karaktermu:
 
       const prompt =
         "Kamu adalah ahli biologi perikanan dan pemancing profesional. " +
-        "Analisis foto ini. Identifikasi spesies ikannya (atau ikan air tawar/laut tropis Indonesia terdekat jika foto kurang jelas). " +
+        "Analisis foto ini. Pertama periksa dengan teliti: APAKAH ADA IKAN PADA FOTO INI? " +
+        "Jika TIDAK ADA IKAN (misal: foto manusia, benda mati, ruangan, pemandangan tanpa ikan, teks, hewan lain bukan ikan), beri is_fish: false. " +
+        "Jika ADA IKAN, identifikasi spesiesnya (spesies air tawar/laut tropis Indonesia terdekat jika foto kurang jelas). " +
         "Berikan estimasi berat tangkapan realistis dalam kg, umpan/lure paling tepat, dan catatan deskripsi singkat 1-2 kalimat. " +
         "Jawab HANYA dalam format JSON valid persis seperti ini (tanpa markdown backtick): " +
-        '{"fish_name":"Nama Ikan", "estimated_weight": 1.5, "recommended_lure":"Nama Umpan", "description":"Deskripsi singkat"}';
+        '{"is_fish": true, "fish_name":"Nama Ikan", "estimated_weight": 1.5, "recommended_lure":"Nama Umpan", "description":"Deskripsi singkat"} ' +
+        'atau jika bukan ikan: {"is_fish": false, "fish_name":"", "estimated_weight": 0, "recommended_lure":"", "description":"Tidak ada ikan terdeteksi pada gambar."}';
 
       const imageMime = mimeType || "image/jpeg";
       const imageUrl = `data:${imageMime};base64,${base64Image}`;

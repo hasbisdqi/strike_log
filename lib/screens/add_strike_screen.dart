@@ -190,6 +190,39 @@ class _AddStrikeScreenState extends State<AddStrikeScreen> {
     // 2. AI Vision Scan
     try {
       final scanResult = await AiVisionService.scanFishPhoto(file);
+      if (!scanResult.isFishDetected) {
+        if (mounted) {
+          setState(() {
+            _imageFile = null;
+            _blockchainProof = null;
+            _fishNameController.clear();
+            _weightController.clear();
+            _isAiScanning = false;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(
+                children: [
+                  const Icon(Icons.warning_amber_rounded, color: Colors.white),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      scanResult.description.isNotEmpty
+                          ? scanResult.description
+                          : 'Foto ditolak: Tidak ada ikan terdeteksi pada gambar.',
+                    ),
+                  ),
+                ],
+              ),
+              backgroundColor: Colors.redAccent,
+              behavior: SnackBarBehavior.floating,
+              duration: const Duration(seconds: 4),
+            ),
+          );
+        }
+        return;
+      }
+
       if (mounted) {
         setState(() {
           _fishNameController.text = scanResult.fishName;
